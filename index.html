@@ -46,6 +46,7 @@
       display:flex;align-items:center;gap:8px;
       user-select:none;
       transition: transform .08s ease;
+      white-space:nowrap;
     }
     .pill:active{transform:scale(.98)}
     .pill strong{font-size:14px}
@@ -53,7 +54,6 @@
       background: linear-gradient(180deg, rgba(255,255,255,.16), rgba(255,255,255,.06));
     }
 
-    /* ---- Home: Today Picks ---- */
     .todayRow{ margin-top:10px; display:grid; gap:10px; }
     @media (min-width:860px){ .todayRow{grid-template-columns: 1.35fr .65fr;} }
     .panel{
@@ -116,7 +116,6 @@
     .stat .v{font-weight:1000;font-size:14px}
     .miniRow{display:flex;gap:10px;flex-wrap:wrap}
 
-    /* ---- Category grid ---- */
     .grid{
       display:grid;
       grid-template-columns: repeat(2, 1fr);
@@ -179,7 +178,6 @@
       text-align:center;
     }
 
-    /* ===== Scene ===== */
     .scene{
       position:fixed;inset:0;display:none;
       align-items:center;justify-content:center;
@@ -205,6 +203,14 @@
       backdrop-filter: blur(16px);
       transform: translateZ(0);
     }
+    /* ✅ 임팩트용 */
+    .sceneCard.hit{ animation: hit 240ms ease-out; }
+    @keyframes hit{
+      0%{ transform: translateZ(0) scale(1); }
+      35%{ transform: translateZ(0) scale(1.02); }
+      100%{ transform: translateZ(0) scale(1); }
+    }
+
     .sceneTop{
       display:flex;align-items:center;justify-content:space-between;gap:10px;
       margin-bottom:14px;
@@ -230,7 +236,6 @@
       display:flex;gap:8px;flex-wrap:wrap;justify-content:center;
     }
 
-    /* 3D canvas container */
     .canvasWrap{
       width:min(580px, 92vw);
       height:350px;
@@ -248,7 +253,6 @@
     }
     canvas{display:block;width:100%;height:100%}
 
-    /* Fallback */
     .fallbackBox{
       position:absolute;inset:0;
       display:none;
@@ -301,7 +305,6 @@
     .progress{width:min(580px,92vw);height:8px;border-radius:999px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);overflow:hidden;margin-top:10px;display:none}
     .progress > div{height:100%;width:0%;background:rgba(255,255,255,.86);border-radius:999px;transition:width .15s linear}
 
-    /* question screen */
     .qs{position:fixed;inset:0;display:none;z-index:40;background:#000;}
     .sparkBg{
       position:absolute;inset:0;
@@ -321,9 +324,7 @@
       padding:0 10px;color:#fff;text-shadow:0 0 26px rgba(255,255,255,.14);
       min-height:120px;
     }
-    .qTools{
-      display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:6px;
-    }
+    .qTools{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:6px;}
     .toolBtn{
       border:1px solid rgba(255,255,255,.14);
       background:rgba(255,255,255,.08);
@@ -343,7 +344,6 @@
     .qBtns button{flex:1;padding:13px 12px;border-radius:14px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.08);color:#fff;cursor:pointer;font-weight:950;}
     .qBtns button.primary{background:#fff;color:#000;border-color:#fff}
 
-    /* history modal */
     .modal{
       position:fixed;inset:0;display:none;z-index:60;align-items:center;justify-content:center;
     }
@@ -376,7 +376,6 @@
       padding:5px 8px;
     }
 
-    /* calendar */
     .cal{
       display:grid;gap:8px;margin-top:10px;
       grid-template-columns: repeat(6, 1fr);
@@ -407,16 +406,19 @@
       <div class="brand">
         <h1>🎁 오늘의 새로움</h1>
         <p>오늘의 새로움을 열어보세요.</p>
+        <button class="pill" id="quoteBtn" style="margin-top:10px;">💬 오늘의 명언 보기</button>
       </div>
       <div class="actions">
         <button class="pill" id="historyBtn">📚 기록</button>
         <button class="pill" id="settingsBtn">⚙️ 설정</button>
-        <div class="pill primary" id="keysPill">🔑 <strong id="keysCount">3</strong> / 3</div>
+        <button class="pill primary" id="tierPill">🏅 <strong id="tierName">BRONZE</strong></button>
+
+        <!-- ✅ cap 숫자도 같이 표시 -->
+        <div class="pill primary" id="keysPill">🔑 <strong id="keysCount">0</strong> / <span id="keysCap">0</span></div>
         <button class="pill" id="soundBtn">🔊 사운드 ON</button>
       </div>
     </div>
 
-    <!-- Today Picks + Stats -->
     <div class="todayRow">
       <div class="panel">
         <div class="panelHead">
@@ -482,7 +484,7 @@
       <div class="cta">
         <div>
           <div class="t">🎬 광고 보기 (열쇠 +1)</div>
-          <div class="d">광고를 볼 때마다 열쇠 1개를 추가로 받을 수 있어요.</div>
+          <div class="d">광고를 볼 때마다 열쇠 1개를 추가로 받을 수 있어요. (최대치까지 누적)</div>
         </div>
         <button id="adBtn">광고 보기</button>
       </div>
@@ -545,6 +547,34 @@
       <div class="qMeta" id="qMeta"></div>
       <div class="qText" id="qText"></div>
 
+      <!-- MCQ -->
+      <div id="mcqBox" style="display:none; margin:10px auto 0; width:min(720px,92vw);">
+        <div id="mcqHint" style="text-align:center;font-size:12px;color:rgba(255,255,255,.75);margin-bottom:10px;">
+          오지선다로 답해보세요.
+        </div>
+        <div id="mcqOptions" style="display:grid;gap:10px;"></div>
+      </div>
+
+      <!-- Answer input -->
+      <div style="width:min(720px,92vw); margin:12px auto 0;">
+        <div style="font-size:12px;color:rgba(255,255,255,.72); text-align:center; margin-bottom:8px;">
+          ✍️ 이 질문에 대한 내 답을 짧게 남겨보세요. (저장하면 ‘내 게시판’에서 모아볼 수 있어요)
+        </div>
+        <textarea id="answerInput" rows="4"
+          style="width:100%; border-radius:16px; padding:12px; border:1px solid rgba(255,255,255,.14);
+                 background:rgba(255,255,255,.06); color:#fff; outline:none; resize:vertical;"
+          placeholder="예: 오늘은 7분 산책부터 해볼게요. 시작은 ‘신발 신기’로!"></textarea>
+
+        <div style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin-top:10px;">
+          <button class="toolBtn" id="saveAnswerBtn">💾 답변 저장</button>
+          <button class="toolBtn" id="openBoardBtn">🧾 내 게시판</button>
+        </div>
+
+        <div id="answerSavedHint" style="display:none;text-align:center;margin-top:8px;font-size:12px;color:rgba(255,255,255,.75);">
+          저장 완료! 내 게시판에서 확인할 수 있어요.
+        </div>
+      </div>
+
       <div class="qTools">
         <button class="toolBtn" id="likeBtn">👍 좋아요</button>
         <button class="toolBtn" id="dislikeBtn">👎 별로</button>
@@ -606,6 +636,12 @@
       const dd=String(d.getDate()).padStart(2,"0");
       return `${yy}-${mm}-${dd}`;
     }
+    function tidyKorean(s){
+      return String(s||"")
+        .replace(/\s+/g," ")
+        .replace(/\s([?.!,])/g,"$1")
+        .trim();
+    }
     function showToast(msg){
       const toast = $("toast");
       toast.textContent = msg;
@@ -614,7 +650,7 @@
       showToast._t = setTimeout(()=> toast.style.display="none", 1900);
     }
 
-    // stable pseudo-random (seeded)
+    // seeded RNG
     function xmur3(str){
       let h=1779033703 ^ str.length;
       for(let i=0;i<str.length;i++){
@@ -639,61 +675,35 @@
       const seed = xmur3(seedStr)();
       return mulberry32(seed);
     }
-    function pick(rng, arr){ return arr[Math.floor(rng()*arr.length)]; }
-
-    // ====== Korean grammar helpers (polite + particles) ======
-    function hasFinalConsonant(korChar){
-      const c = korChar.charCodeAt(0);
-      if(c < 0xAC00 || c > 0xD7A3) return false;
-      return ((c - 0xAC00) % 28) !== 0;
-    }
-    function lastHangulChar(str){
-      for(let i=str.length-1;i>=0;i--){
-        const ch=str[i];
-        if(/[가-힣]/.test(ch)) return ch;
-      }
-      return str[str.length-1] || "";
-    }
-    function particle(word, pair){ // pair: "을/를", "이/가", "은/는", "과/와"
-      const last = lastHangulChar(word);
-      const jong = last && hasFinalConsonant(last);
-      const [a,b]=pair.split("/");
-      if(pair==="과/와") return jong ? "과" : "와";
-      if(pair==="을/를") return jong ? "을" : "를";
-      if(pair==="이/가") return jong ? "이" : "가";
-      if(pair==="은/는") return jong ? "은" : "는";
-      return b;
-    }
-    function tidyKorean(s){
-      return String(s||"")
-        .replace(/\s+/g," ")
-        .replace(/\s([?.!,])/g,"$1")
-        .trim();
-    }
-    function politeQuestion(s){
-      s = tidyKorean(s);
-      if(/[?？]$/.test(s)) return s;
-      if(/(까요|나요|인가요|할까요|될까요|있을까요|없을까요)\s*$/.test(s)) return s + "?";
-      return s.replace(/[.。]$/,"") + "… 어떻게 하실 건가요?";
-    }
 
     /* ===========================
       1) STORAGE / STATE
     =========================== */
     const LS = {
+      PREMIUM:"novel_premium_v1",
       KEYS:"novel_keys",
       DAY:"novel_day",
-      HIST:"novel_hist_v2",
+      HIST:"novel_hist_v3",
       SOUND:"novel_sound",
-      PREF:"novel_pref_v2",
+      PREF:"novel_pref_v3",
       DONE:"novel_done_days",
       STREAK:"novel_streak",
       LASTDONE:"novel_last_done",
       TOTALDONE:"novel_total_done",
-      SETTINGS:"novel_settings_v2",
-      RECENT:"novel_recent_ids_v2",
-      PICKS:"novel_today_picks_v2",
+      SETTINGS:"novel_settings_v3",
+      RECENT:"novel_recent_ids_v3",
+      PICKS:"novel_today_picks_v3",
+      USER:"novel_user_v1",
+      ANS:"novel_answers_v1",
+      PLANS:"novel_plans_v1"
     };
+
+    function isPremium(){
+      return localStorage.getItem(LS.PREMIUM) === "1";
+    }
+    function setPremium(on){
+      localStorage.setItem(LS.PREMIUM, on ? "1" : "0");
+    }
 
     function safeJSONGet(key, fallback){
       try{
@@ -706,26 +716,162 @@
       try{ localStorage.setItem(key, JSON.stringify(obj)); }catch(e){}
     }
 
+    function getStreak(){ return Number(localStorage.getItem(LS.STREAK) || "0"); }
+    function setStreak(n){ localStorage.setItem(LS.STREAK, String(Math.max(0,n))); }
+    function getTotalDone(){ return Number(localStorage.getItem(LS.TOTALDONE) || "0"); }
+    function setTotalDone(n){ localStorage.setItem(LS.TOTALDONE, String(Math.max(0,n))); }
+    function getLastDone(){ return localStorage.getItem(LS.LASTDONE) || ""; }
+    function setLastDone(d){ localStorage.setItem(LS.LASTDONE, d); }
+
+    const TIERS = [
+      { key:"bronze",   name:"BRONZE",   dailyKeys:3, color:"#b07a4a", glow:"rgba(176,122,74,.35)", badge:"🟤", req:0 },
+      { key:"silver",   name:"SILVER",   dailyKeys:4, color:"#cfd6df", glow:"rgba(207,214,223,.35)", badge:"⚪", req:7 },
+      { key:"gold",     name:"GOLD",     dailyKeys:6, color:"#ffd07a", glow:"rgba(255,208,122,.35)", badge:"🟡", req:20 },
+      { key:"platinum", name:"PLATINUM", dailyKeys:8, color:"#8fe6ff", glow:"rgba(143,230,255,.35)", badge:"🔷", req:45 },
+      { key:"diamond",  name:"DIAMOND",  dailyKeys:10,color:"#b6a6ff", glow:"rgba(182,166,255,.35)", badge:"💎", req:80 },
+    ];
+
+    function getTier(){
+      const done = getTotalDone();
+      let t = TIERS[0];
+      for(const x of TIERS){
+        if(done >= x.req) t = x;
+      }
+      return t;
+    }
+    function getKeyCap(){ return getTier().dailyKeys; } // 일일 기본 지급량
+    function getMaxKeys(){
+  // ✅ 광고로도 티어 일일 지급량(브론즈=3) 이상 못 모음
+  if(isPremium()) return 999;  // 프리미엄만 사실상 무제한(원하면 999도 티어별로 바꿔도 됨)
+  return getKeyCap();          // ✅ 핵심: 브론즈면 max=3
+}
+
+
+
+
+    function renderTierUI(){
+      const t = getTier();
+      $("tierName").textContent = t.name;
+      $("tierPill").style.borderColor = "rgba(255,255,255,.18)";
+      $("tierPill").style.background = `linear-gradient(180deg, ${t.glow}, rgba(255,255,255,.06))`;
+    }
+
+    function tierEmblemSVG(t){
+      const core = t.color;
+      const symbol = {
+        // ✅ 브론즈: 더 고급스러운 코어
+        bronze:   "M 64 22 C 54 30 50 44 56 56 C 60 64 68 64 72 56 C 78 44 74 30 64 22 Z",
+        silver:   "M 64 16 A 22 22 0 1 0 64 60 A 22 22 0 1 0 64 16",
+        gold:     "M 64 18 L 84 40 L 64 62 L 44 40 Z",
+        platinum: "M 64 16 L 92 34 L 84 66 L 44 66 L 36 34 Z",
+        diamond:  "M 64 10 L 100 38 L 84 86 L 44 86 L 28 38 Z"
+      }[t.key];
+
+      return `
+      <svg width="260" height="260" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <radialGradient id="g" cx="50%" cy="45%" r="60%">
+            <stop offset="0%" stop-color="${core}" stop-opacity="0.95"/>
+            <stop offset="55%" stop-color="${core}" stop-opacity="0.35"/>
+            <stop offset="100%" stop-color="#000" stop-opacity="0"/>
+          </radialGradient>
+          <filter id="glow">
+            <feGaussianBlur stdDeviation="3" result="b"/>
+            <feMerge>
+              <feMergeNode in="b"/>
+              <feMergeNode in="SourceGraphic"/>
+            </feMerge>
+          </filter>
+        </defs>
+
+        <circle cx="64" cy="64" r="52" fill="rgba(255,255,255,.04)" stroke="rgba(255,255,255,.14)" stroke-width="2"/>
+        <circle cx="64" cy="64" r="44" fill="none" stroke="rgba(255,255,255,.10)" stroke-width="2" stroke-dasharray="6 7"/>
+
+        <circle cx="64" cy="64" r="34" fill="url(#g)" filter="url(#glow)"/>
+        <path d="${symbol}" fill="rgba(255,255,255,.88)" filter="url(#glow)"/>
+
+        <!-- ✅ 월계관 느낌 -->
+        <path d="M 34 68 C 30 56 34 44 44 38" fill="none" stroke="rgba(255,255,255,.55)" stroke-width="3" stroke-linecap="round"/>
+        <path d="M 94 68 C 98 56 94 44 84 38" fill="none" stroke="rgba(255,255,255,.55)" stroke-width="3" stroke-linecap="round"/>
+
+        <circle cx="64" cy="64" r="6" fill="${core}" filter="url(#glow)"/>
+      </svg>`;
+    }
+
+    function nextTierNeed(){
+      const done = getTotalDone();
+      const t = getTier();
+      const idx = TIERS.findIndex(x=>x.key===t.key);
+      const nxt = TIERS[Math.min(TIERS.length-1, idx+1)];
+      return Math.max(0, nxt.req - done);
+    }
+
+    function openTierModal(){
+      const t = getTier();
+      openModal(`🏅 내 티어 · ${t.name}`, (body)=>{
+        const box=document.createElement("div");
+        box.className="item";
+        box.innerHTML = `
+          <div class="meta">현재 티어는 <b>${t.name}</b> 입니다.</div>
+          <div style="display:flex;justify-content:center;margin:14px 0;">${tierEmblemSVG(t)}</div>
+
+          <div class="q" style="font-weight:850;line-height:1.5;">
+            ${t.badge} 매일 지급 열쇠: <b>${t.dailyKeys}</b>개<br/>
+            🎬 광고로 누적 최대: <b>${getMaxKeys()}</b>개<br/>
+            📈 다음 티어까지: <b>${Math.max(0, nextTierNeed())}</b>회 더 완료
+          </div>
+
+          <div class="meta" style="margin-top:12px;">
+            티어는 ‘완료 횟수’가 쌓일수록 상승해요.
+          </div>
+        `;
+        body.appendChild(box);
+      });
+    }
+
     function ensureDaily(){
       const t = todayKey();
       const last = localStorage.getItem(LS.DAY);
       if(last !== t){
         localStorage.setItem(LS.DAY, t);
-        localStorage.setItem(LS.KEYS, "3"); // daily free keys
-        localStorage.removeItem(LS.PICKS);  // daily picks reset
+
+        // ✅ 매일 기본 지급(티어 기준)
+        localStorage.setItem(LS.KEYS, String(getKeyCap()));
+        localStorage.removeItem(LS.PICKS);
       }
+
+      // ✅ 혹시 너무 크면 max로 클램프
+      const cur = Number(localStorage.getItem(LS.KEYS) || "0");
+      const cap = getMaxKeys();
+      if(cur > cap) localStorage.setItem(LS.KEYS, String(cap));
     }
+
     function left(){ ensureDaily(); return Number(localStorage.getItem(LS.KEYS) || "0"); }
-    function setKeys(n){ localStorage.setItem(LS.KEYS, String(Math.max(0, n))); }
+    function setKeys(n){
+      ensureDaily();
+      const cap = getMaxKeys();
+      const v = Math.max(0, Math.min(cap, n));
+      localStorage.setItem(LS.KEYS, String(v));
+    }
     function useKey(){ setKeys(left()-1); }
-    function addKey(n=1){ setKeys(left()+n); }
-    function renderKeys(){ $("keysCount").textContent = String(left()); }
+    function addKey(n=1){
+      ensureDaily();
+      const cap = getMaxKeys();
+      const cur = left();
+      if(cur >= cap) return false;
+      setKeys(cur + n);
+      return true;
+    }
+    function renderKeys(){
+      $("keysCount").textContent = String(left());
+      $("keysCap").textContent = String(getMaxKeys());
+    }
 
     function getHist(){ ensureDaily(); return safeJSONGet(LS.HIST, []); }
     function pushHist(entry){
       const arr = getHist();
       arr.unshift(entry);
-      safeJSONSet(LS.HIST, arr.slice(0,120));
+      safeJSONSet(LS.HIST, arr.slice(0,160));
     }
 
     function getPref(){
@@ -743,22 +889,12 @@
     }
     function getMood(){ return (getPref().mood || "light"); }
 
-    function getDoneDays(){ return safeJSONGet(LS.DONE, {}); } // { "YYYY-MM-DD": true }
+    function getDoneDays(){ return safeJSONGet(LS.DONE, {}); }
     function setDoneDays(x){ safeJSONSet(LS.DONE, x); }
-    function isDoneToday(){
-      const days = getDoneDays();
-      return !!days[todayKey()];
-    }
+    function isDoneToday(){ return !!getDoneDays()[todayKey()]; }
 
     function getRecentIds(){ return safeJSONGet(LS.RECENT, []); }
-    function setRecentIds(arr){ safeJSONSet(LS.RECENT, arr.slice(0,120)); }
-
-    function getStreak(){ return Number(localStorage.getItem(LS.STREAK) || "0"); }
-    function setStreak(n){ localStorage.setItem(LS.STREAK, String(Math.max(0,n))); }
-    function getTotalDone(){ return Number(localStorage.getItem(LS.TOTALDONE) || "0"); }
-    function setTotalDone(n){ localStorage.setItem(LS.TOTALDONE, String(Math.max(0,n))); }
-    function getLastDone(){ return localStorage.getItem(LS.LASTDONE) || ""; }
-    function setLastDone(d){ localStorage.setItem(LS.LASTDONE, d); }
+    function setRecentIds(arr){ safeJSONSet(LS.RECENT, arr.slice(0,220)); }
 
     function updateStatsUI(){
       $("streak").textContent = String(getStreak());
@@ -786,17 +922,68 @@
         s = (last === yesterday) ? (s + 1) : 1;
         setStreak(s);
         setLastDone(t);
-
         setTotalDone(getTotalDone()+1);
         updateStatsUI();
+        renderTierUI();
+        renderKeys();
       }
     }
 
+    function getSettings(){
+      return safeJSONGet(LS.SETTINGS, { enable3D:true, lite:false });
+    }
+    function setSettings(s){ safeJSONSet(LS.SETTINGS, s); }
+
     /* ===========================
-      2) CONTENT GENERATOR (업그레이드)
-      - 무제한 조합 생성
-      - 공손한 질문형
-      - 조사 자동 보정
+      2) USER / ANSWERS / PLANS
+    =========================== */
+    function getUser(){
+      let u = safeJSONGet(LS.USER, null);
+      if(u) return u;
+      const id = "u_" + Math.random().toString(36).slice(2,10);
+      const nick = "익명" + Math.floor(1000 + Math.random()*9000);
+      u = { id, nick, createdAt: nowISO() };
+      safeJSONSet(LS.USER, u);
+      return u;
+    }
+    function setUserNick(nick){
+      const u=getUser();
+      u.nick = tidyKorean(nick).slice(0,12) || u.nick;
+      safeJSONSet(LS.USER, u);
+    }
+
+    function getAnswers(){ return safeJSONGet(LS.ANS, {}); }
+    function setAnswers(x){ safeJSONSet(LS.ANS, x); }
+    function saveMyAnswer(prompt, text){
+      const t = tidyKorean(text);
+      if(!t) return false;
+      const all = getAnswers();
+      all[prompt.id] = {
+        text: t,
+        at: nowISO(),
+        cat: prompt.cat,
+        mood: prompt.mood,
+        rarity: state.activeRarity.key,
+        q: prompt.text
+      };
+      setAnswers(all);
+      return true;
+    }
+
+    function getPlans(){ return safeJSONGet(LS.PLANS, {}); }
+    function setPlans(p){ safeJSONSet(LS.PLANS, p); }
+    function setPlanForDay(dayKey, text){
+      const plans=getPlans();
+      plans[dayKey]=tidyKorean(text).slice(0,400);
+      setPlans(plans);
+    }
+    function getPlanForDay(dayKey){
+      const plans=getPlans();
+      return plans[dayKey] || "";
+    }
+
+    /* ===========================
+      3) CONTENT
     =========================== */
     const CATS = [
       {name:"철학", emoji:"🧠", hint:"생각을 꺼내는 질문", premium:false},
@@ -817,185 +1004,110 @@
       {name:"프리미엄·인생 계획", emoji:"🗺️", hint:"장기 설계", premium:true},
     ];
 
-    const SEEDS = {
-      "철학": {
-        themes:["가치","선택","후회","두려움","정체성","성장","자유","책임","행복","의미"],
-        frames:[
-          "{A}{A_p} 기준으로 산다면, 오늘 {B}을/를 어떻게 바꾸실 건가요?",
-          "{A}{A_p} 가장 지키고 싶은 이유는 무엇인가요? 그리고 그 이유를 지키려면 {B}을/를 무엇부터 하실 건가요?",
-          "{A}{A_p} 피하게 되는 순간이 있다면, 그때 당신을 지키는 건 무엇이고 제한하는 건 무엇인가요?"
-        ]
+    const MCQ_BANK = [
+      {
+        cat:"역사·상식",
+        q:"스마트폰 화면이 손가락에 반응하는 가장 흔한 방식은 무엇일까요?",
+        options:["압력 감지","열 감지","정전용량(전기) 변화 감지","소리 감지","빛 감지"],
+        answer:2,
+        explain:"대부분의 터치스크린은 정전용량 변화를 이용해 터치를 감지해요."
       },
-      "운동": {
-        themes:["10분 걷기","스트레칭","가벼운 근력","호흡","자세"],
-        frames:[
-          "오늘 {A}을/를 하신다면, 시작하기 가장 쉬운 ‘첫 30초’는 무엇으로 정하실 건가요?",
-          "{A}을/를 {B} 전에 딱 3분만 하신다면, 어떤 방식이 가장 현실적일까요?",
-          "운동이 어렵게 느껴진다면, ‘환경’에서 바꿀 수 있는 것 1가지는 무엇인가요?"
-        ]
-      },
-      "역사·상식": {
-        themes:["발명","지도","전쟁","무역","화폐","언어","도시","교육","과학"],
-        frames:[
-          "{A}{A_p} 한 가지를 5분만 찾아본다면, ‘가장 의외인 사실’ 1가지는 무엇일까요?",
-          "{A}{A_p} 원인 2개와 결과 1개를 고른다면, 무엇을 선택하시겠어요?",
-          "{A}{A_p} 지금의 우리 생활에 남긴 영향 1가지는 무엇인가요?"
-        ]
-      },
-      "상상·SF": {
-        themes:["불멸","시간여행","기억","AI","다중우주","감정","가상세계","외계 문명"],
-        frames:[
-          "{A}{A_p} 가능해진다면, 반드시 필요하다고 생각하는 규칙 3가지는 무엇일까요?",
-          "{A}{A_p} 단 하나만 질문할 수 있다면, 무엇을 묻고 싶나요?",
-          "{A}{A_p} 일상이 된다면, ‘좋은 변화’ 1개와 ‘위험’ 1개는 무엇일까요?"
-        ]
-      },
-      "언어": {
-        themes:["번역","뉘앙스","발음","단어","관용표현"],
-        frames:[
-          "‘{A}’을/를 다른 언어로 옮긴다면, 의미가 달라지는 부분은 무엇이라고 느끼실까요?",
-          "오늘 새로운 단어 1개를 고른다면, 어떤 단어가 지금 당신에게 가장 유용할까요?",
-          "같은 뜻인데 더 공손하게 말하고 싶다면, 어떤 표현으로 바꾸실 건가요?"
-        ]
-      },
-      "문학": {
-        themes:["비유","장면 묘사","독백","대사","서사","시적 이미지"],
-        frames:[
-          "오늘 본 장면 하나를 ‘{A}’ 느낌으로 바꿔 쓴다면, 어떤 한 문장을 먼저 쓰실 건가요?",
-          "지금 감정을 한 가지 비유로 표현한다면, 무엇에 비유하고 싶나요?",
-          "짧은 글(3문장)로 끝낸다면, 첫 문장은 어떻게 시작하고 싶으신가요?"
-        ]
-      },
-      "심리": {
-        themes:["불안","완벽주의","미루기","비교","자기비판","회복","집중"],
-        frames:[
-          "요즘 {A}{A_p} 올라올 때, 통제 가능한 것 1개와 통제 어려운 것 1개를 구분한다면 무엇일까요?",
-          "{A}{A_p} 나를 보호한 순간과 나를 방해한 순간이 있다면, 각각 어떤 모습이었나요?",
-          "내가 반복하는 패턴이 있다면, 그 패턴의 ‘이득’과 ‘손해’는 무엇인가요?"
-        ]
-      },
-      "토론": {
-        themes:["AI","학교 교육","SNS","환경 규제","게임","노동 시간","시험 제도","부의 불평등"],
-        frames:[
-          "주제: {A}. 찬성/반대 중 한쪽을 고르신다면, 가장 강한 근거 2개는 무엇일까요?",
-          "{A}{A_p} 사회에 도움이 되는 방식과 해가 되는 방식을 각각 2개씩 든다면 무엇인가요?",
-          "{A}{A_p} 규제한다면 얻는 것 1개, 잃는 것 1개는 무엇일까요?"
-        ]
-      },
-      "글쓰기": {
-        themes:["편지","일기","에세이","3문장 이야기","한 문단 소설","대사"],
-        frames:[
-          "미래의 나에게 {A} 형식으로 5문장만 쓴다면, 첫 문장은 무엇으로 시작하실 건가요?",
-          "오늘의 ‘작은 승리’ 1개를 {A}로 남긴다면, 제목은 무엇으로 붙이실 건가요?",
-          "딱 1문단으로 정리한다면, 핵심 문장 1개는 무엇으로 두실 건가요?"
-        ]
-      },
-      "여행": {
-        themes:["도시","자연","시장","박물관","골목","산책","바다","음식"],
-        frames:[
-          "지금 떠날 수 있다면 {A}{A_p} 가서 가장 먼저 하고 싶은 건 무엇인가요?",
-          "여행을 못 가도 가능해요. 오늘 주변을 ‘관광지’처럼 본다면, 발견 3가지는 무엇일까요?",
-          "{A}{A_p} 가는 여행이 ‘지금의 나’에게 필요한 이유 1가지는 무엇일까요?"
-        ]
-      },
+      {
+        cat:"역사·상식",
+        q:"비행기 창문이 완전한 네모가 드문 이유로 가장 맞는 것은?",
+        options:["디자인 취향","비용","응력 집중을 줄이기 위해","유리 재료 때문","빛 반사 때문"],
+        answer:2,
+        explain:"모서리가 뾰족하면 응력이 집중돼 균열 위험이 커져요."
+      }
+    ];
 
-      // Premium: 좀 더 묵직한 톤
-      "프리미엄·깊은 질문": {
-        themes:["진짜 목표","두려움","정체성","관계","시간","후회","의미"],
-        frames:[
-          "{A}{A_p} 지금의 선택을 흔들고 있다면, 그 흔들림의 핵심은 무엇일까요?",
-          "당신에게 {A}{A_p} 가장 중요한 이유를 2문장으로 설명해 주실 수 있을까요?",
-          "{A}{A_p} 바뀐다면, 삶의 우선순위는 어떻게 달라질까요?"
-        ]
-      },
-      "프리미엄·습관 설계": {
-        themes:["공부","운동","독서","기록","집중","수면","정리","영어"],
-        frames:[
-          "{A}{A_p} 습관이 되려면, 시작 신호(트리거)는 무엇이 가장 적절할까요?",
-          "{A}{A_p} ‘아주 작게’ 만든다면, 2분 버전은 무엇이 될까요?",
-          "{A}{A_p} 실패하는 상황을 2개 예상하고, 대체 행동을 정하신다면 무엇일까요?"
-        ]
-      },
-      "프리미엄·관계/소통": {
-        themes:["고마움","미안함","경계","칭찬","경청","오해"],
-        frames:[
-          "{A}{A_p} 필요한 순간이 있다면, 지금 누구에게 어떤 한 문장을 전하고 싶으신가요?",
-          "{A}{A_p} 어려운 이유는 무엇인가요? 그리고 부담을 줄이려면 무엇을 바꾸면 좋을까요?",
-          "관계에서 반복되는 패턴이 있다면, 그 패턴을 바꿀 ‘미세 행동’ 1개는 무엇일까요?"
-        ]
-      },
-      "프리미엄·커리어": {
-        themes:["기획","코딩","디자인","영어","발표","마케팅","영상","데이터"],
-        frames:[
-          "{A}{A_p} 강점이 되려면, 다음 2주 동안 가장 작은 실천은 무엇이 좋을까요?",
-          "{A}{A_p} 피하고 싶은 환경이 있다면, 그 이유는 무엇인가요?",
-          "{A}{A_p} 실력 증명을 위해 만들 수 있는 ‘작은 결과물’ 1개는 무엇일까요?"
-        ]
-      },
-      "프리미엄·인생 계획": {
-        themes:["3년 뒤","루틴","가치","돈","관계","건강","목표"],
-        frames:[
-          "{A}{A_p} 선명해진다면, 지금의 하루에서 가장 먼저 바꾸고 싶은 건 무엇일까요?",
-          "{A}{A_p} 흔들릴 때마다 확인할 ‘한 문장 원칙’이 있다면 무엇일까요?",
-          "당신의 {A}{A_p} 방해하는 ‘가짜 목표’가 있다면 무엇이라고 생각하시나요?"
-        ]
-      },
-    };
+    const PREMIUM_BANK = [
+      "이번 주 ‘삶의 질’을 올리는 핵심 행동 1개만 고른다면 무엇이 좋을까요? (2분 버전도 함께 정해보세요)",
+      "목표가 흔들릴 때마다 되돌아올 ‘한 문장 원칙’을 만들고 싶어요. 당신의 원칙은 무엇일까요?",
+      "시간을 빼앗는 것 1개를 고르고, ‘차단 방법 1개 + 대체 행동 1개’를 정해볼까요?",
+      "다음 14일 동안 매일 10분만 투자한다면, 무엇을 하면 가장 큰 변화가 생길까요?",
+      "미루는 순간의 트리거(상황/감정)를 1개 고르고, 그때의 대체 행동은 무엇일까요?"
+    ];
+    const CURIOSITY_BANK = [
+      "왜 뜨거운 물이 경우에 따라 더 빨리 얼 수 있을까요? (힌트: Mpemba effect)",
+      "하품이 전염되는 이유는 무엇일까요? (힌트: 공감/주의/거울뉴런 가설)",
+      "손가락 끝이 물에서 쭈글쭈글해지는 건 왜일까요? (힌트: 접지력)",
+      "비행기는 번개를 맞아도 보통 안전한 이유가 뭘까요? (힌트: 패러데이 케이지)",
+      "휴대폰 진동은 내부에서 무엇이 어떻게 움직여서 생길까요? (힌트: ERM/LRA)"
+    ];
+    const ACTION_BANK = [
+      "지금 7분만, 평소 안 보던 방향으로 동네를 걸어보세요.",
+      "딱 5분만 하늘을 보고, 오늘 처음 본 구름 모양 1개를 찾아보세요.",
+      "지금 3분: 목·어깨·손목 중 한 곳만 골라 스트레칭해보세요.",
+      "물 한 잔을 천천히 마시고, 숨을 10번만 깊게 쉬어보세요.",
+      "새 단어 1개를 골라 뜻을 찾아보고, 예문 1개만 만들어보세요."
+    ];
+    const THINKING_BANK = [
+      "요즘 머릿속을 가장 자주 차지하는 생각 1개를 한 문장으로만 적어볼까요?",
+      "오늘 하루에서 ‘작게라도’ 괜찮았던 순간 1개는 무엇이었나요?",
+      "줄일 수 있는 스트레스 원인 1개를 고르고, 오늘 할 수 있는 ‘아주 작은 조치’는 무엇일까요?"
+    ];
 
-    function buildPrompt(cat, mood, seedStr){
-      const rng = seededRng(seedStr);
-      const S = SEEDS[cat] || SEEDS["철학"];
-      const A = pick(rng, S.themes);
-      const B = pick(rng, (SEEDS["심리"]?.themes||["루틴","생각","행동"]));
-      const frame = pick(rng, S.frames);
+    function maybeMakeMCQ(cat, seedStr){
+      if(cat!=="역사·상식") return null;
+      const rng = seededRng("mcq|" + seedStr);
+      if(rng() > 0.30) return null;
+      const pick = MCQ_BANK[Math.floor(rng()*MCQ_BANK.length)];
+      return {
+        id: `mcq:${xmur3(seedStr)()}`,
+        cat: pick.cat,
+        mood: getMood(),
+        kind:"mcq",
+        text: pick.q,
+        options: pick.options,
+        answer: pick.answer,
+        explain: pick.explain
+      };
+    }
 
-      const A_p = particle(A, "이/가");
+    /* ✅ 중요: buildPromptV4 중복 정의 버그 제거(정상 버전) */
+    function buildPromptV4(cat, mood, seedStr){
+      const mcq = maybeMakeMCQ(cat, seedStr);
+      if(mcq) return mcq;
 
-      let text = frame
-        .replaceAll("{A}", A)
-        .replaceAll("{A_p}", A_p)
-        .replaceAll("{B}", B);
+      const rng = seededRng("v4|" + seedStr);
+      const isPremiumCat = String(cat).startsWith("프리미엄");
+      let text;
 
-      // 조사 보정 (간단 규칙)
-      text = text
-        .replaceAll("을/를", particle(A, "을/를"))
-        .replaceAll("이/가", particle(A, "이/가"))
-        .replaceAll("은/는", particle(A, "은/는"))
-        .replaceAll("과/와", particle(A, "과/와"));
-
-      if(mood==="deep"){
-        const tail = pick(rng, [
-          "가능하다면, 그 이유를 2문장으로 덧붙여 주실 수 있을까요?",
-          "그리고 그것을 오늘 ‘딱 하나’ 행동으로 옮긴다면 무엇이 될까요?",
-          "마지막으로, 반대 입장에서의 반론 1개도 함께 떠올려 주실 수 있을까요?"
-        ]);
-        text = tidyKorean(text) + " " + tail;
+      if(isPremiumCat){
+        text = PREMIUM_BANK[Math.floor(rng()*PREMIUM_BANK.length)];
+      }else{
+        if(cat==="역사·상식" || cat==="언어"){
+          text = CURIOSITY_BANK[Math.floor(rng()*CURIOSITY_BANK.length)];
+        }else if(cat==="운동"){
+          text = ACTION_BANK[Math.floor(rng()*ACTION_BANK.length)];
+        }else{
+          text = THINKING_BANK[Math.floor(rng()*THINKING_BANK.length)];
+        }
       }
 
-      text = politeQuestion(text);
-      const id = `gen:${cat}:${mood}:${xmur3(seedStr)()}`;
+      text = tidyKorean(text);
+      const id = `v4:${cat}:${mood}:${xmur3(seedStr)()}`;
       return { id, cat, mood, text };
     }
 
-    function generateNonRepeat(cat, mood, seedBase, maxTry=30){
+    function generateNonRepeat(cat, mood, seedBase, maxTry=40){
       const recent = new Set(getRecentIds());
       for(let i=0;i<maxTry;i++){
         const seed = `${seedBase}|${i}`;
-        const p = buildPrompt(cat, mood, seed);
+        const p = buildPromptV4(cat, mood, seed);
         if(!recent.has(p.id)){
-          const arr = [p.id, ...getRecentIds()];
-          setRecentIds(arr);
+          setRecentIds([p.id, ...getRecentIds()]);
           return p;
         }
       }
-      const p = buildPrompt(cat, mood, `${seedBase}|fallback`);
-      const arr = [p.id, ...getRecentIds()];
-      setRecentIds(arr);
+      const p = buildPromptV4(cat, mood, `${seedBase}|fallback`);
+      setRecentIds([p.id, ...getRecentIds()]);
       return p;
     }
 
     /* ===========================
-      3) RECOMMENDATION (오늘의 추천)
+      4) RECOMMENDATION
     =========================== */
     const RARITIES = [
       { key:"common", label:"일반", prob:0.78, dot:"#ffffff" },
@@ -1015,7 +1127,7 @@
     function weightedCats(){
       const p=getPref();
       const base = CATS.filter(c=>!c.premium).map(c=>c.name);
-      const weights = base.map(name=>{
+      return base.map(name=>{
         const open = (p.catOpen[name]||0);
         let likeBoost = 0;
         for(const [qid, v] of Object.entries(p.like||{})){
@@ -1023,7 +1135,6 @@
         }
         return { name, w: 1 + open*0.12 + likeBoost*0.06 };
       });
-      return weights;
     }
     function pickWeighted(rng, items){
       const sum = items.reduce((a,x)=>a+x.w,0);
@@ -1050,13 +1161,12 @@
       for(let i=0;i<3;i++){
         let cat = pickWeighted(rng, weights);
         let guard=0;
-        while(usedCats.has(cat) && guard++<10){
-          cat = pickWeighted(rng, weights);
-        }
+        while(usedCats.has(cat) && guard++<10) cat = pickWeighted(rng, weights);
         usedCats.add(cat);
 
         const rarity = rollRarity(rng);
         const prompt = generateNonRepeat(cat, mood, `pick|${todayKey()}|${cat}|${i}`);
+
         items.push({
           ...prompt,
           emoji: (CATS.find(x=>x.name===cat)?.emoji)||"✨",
@@ -1090,7 +1200,7 @@
     }
 
     /* ===========================
-      4) UI RENDER: categories
+      5) UI RENDER
     =========================== */
     function renderCats(){
       const grid = $("grid");
@@ -1111,7 +1221,7 @@
     }
 
     /* ===========================
-      5) SCENE + OPEN FLOW
+      6) STATE + OPEN FLOW
     =========================== */
     const state = {
       opening:false,
@@ -1128,12 +1238,10 @@
       void flash.offsetWidth;
       flash.classList.add("on");
     }
-
     function setRarityUI(r){
       $("rarityText").textContent = r.label;
       $("rarityDot").style.background = r.dot;
     }
-
     function runProgress(ms){
       const prog=$("prog"), bar=$("progBar");
       prog.style.display="block";
@@ -1161,16 +1269,18 @@
       const mood = getMood();
       state.currentPrompt = generateNonRepeat(state.activeCat, mood, `preview|${todayKey()}|${state.activeCat}|${Date.now()}`);
 
+      // 미리보기 rarity도 하나 정해두기
       const rng = seededRng(`rar|${todayKey()}|${state.activeCat}|${Date.now()}`);
       state.activeRarity = rollRarity(rng);
       setRarityUI(state.activeRarity);
 
-      if(getSettings().enable3D && window.__threeReady){
+      const settings = getSettings();
+      if(settings.enable3D && window.__threeReady){
         $("fallbackBox").style.display = "none";
         $("tapHint").textContent = "클릭해서 열기";
       }else{
         $("fallbackBox").style.display = "flex";
-        $("tapHint").textContent = getSettings().enable3D ? "클릭해서 열기 (3D 로딩 중)" : "클릭해서 열기";
+        $("tapHint").textContent = settings.enable3D ? "클릭해서 열기 (3D 로딩 중)" : "클릭해서 열기";
       }
 
       $("scene").style.display="flex";
@@ -1188,11 +1298,11 @@
       $("prog").style.display = "none";
       $("progBar").style.width = "0%";
 
-      state.currentPrompt = { id:p.id, cat:p.cat, mood:p.mood, text:p.text };
+      state.currentPrompt = { id:p.id, cat:p.cat, mood:p.mood, text:p.text, kind:p.kind, options:p.options, answer:p.answer, explain:p.explain };
 
       const r = RARITIES.find(x=>x.key===p.rarity) || RARITIES[0];
       state.activeRarity = r;
-      setRarityUI(r);
+      setRarityUI(state.activeRarity);
 
       $("scene").style.display="flex";
       if(window.__threeApi) window.__threeApi.reset(state.activeRarity.key);
@@ -1203,7 +1313,7 @@
       state.opening=false;
     }
 
-    function typeText(el, text, speed=20){
+    function typeText(el, text, speed=18){
       el.textContent = "";
       let i=0;
       const timer=setInterval(()=>{
@@ -1216,13 +1326,32 @@
       $("doneCheck").checked = false;
       $("qMeta").textContent = `오늘의 카테고리: ${prompt.cat} · ${prompt.mood==="deep"?"깊게":"가볍게"} · ${state.activeRarity.label}`;
       $("qs").style.display="block";
-      typeText($("qText"), prompt.text, 18);
+
+      $("answerSavedHint").style.display = "none";
+      $("mcqBox").style.display = "none";
+      $("mcqOptions").innerHTML = "";
+      $("answerInput").value = "";
+
+      typeText($("qText"), prompt.text, 16);
+
+      if(prompt.kind === "mcq"){
+        $("mcqBox").style.display = "block";
+        (prompt.options||[]).forEach((label, idx)=>{
+          const b=document.createElement("button");
+          b.className="toolBtn";
+          b.style.width="100%";
+          b.textContent = `${idx+1}. ${label}`;
+          b.onclick = ()=>{
+            if(idx === prompt.answer) showToast("✅ 정답! " + (prompt.explain||""));
+            else showToast("🙂 아쉽지만 괜찮아요. " + (prompt.explain||""));
+          };
+          $("mcqOptions").appendChild(b);
+        });
+      }
 
       const pref = getPref();
       const liked = !!pref.like[prompt.id];
       const disliked = !!pref.dislike[prompt.id];
-      $("likeBtn").style.opacity = liked ? "1" : ".9";
-      $("dislikeBtn").style.opacity = disliked ? "1" : ".9";
       $("likeBtn").style.borderColor = liked ? "rgba(255,255,255,.28)" : "rgba(255,255,255,.14)";
       $("dislikeBtn").style.borderColor = disliked ? "rgba(255,255,255,.28)" : "rgba(255,255,255,.14)";
 
@@ -1245,15 +1374,11 @@
       showToast("🎲 새 질문을 준비했어요. (열면 기록됩니다)");
       $("sceneMini").textContent = "새 질문을 준비했어요. 상자를 클릭해 열어보세요.";
     }
-
     function previewPrompt(){
       if(!state.currentPrompt) return;
       showToast(`👀 미리보기: ${state.currentPrompt.text}`);
     }
 
-    /* ===========================
-      6) LIKE / DISLIKE + PERSONALIZATION
-    =========================== */
     function setLikeState(promptId, v){
       const p=getPref();
       if(v===1){
@@ -1268,7 +1393,6 @@
       }
       setPref(p);
     }
-
     function updateLastHistReaction(promptId){
       const arr = getHist();
       const idx = arr.findIndex(x=>x.id===promptId);
@@ -1280,17 +1404,13 @@
     }
 
     /* ===========================
-      7) MODALS: History / Calendar / Settings
+      7) MODALS
     =========================== */
-    function openModal(title, htmlOrNodeBuilder){
+    function openModal(title, builder){
       $("modalTitle").textContent = title;
       const body = $("modalBody");
       body.innerHTML = "";
-      if(typeof htmlOrNodeBuilder === "string"){
-        body.innerHTML = htmlOrNodeBuilder;
-      }else{
-        htmlOrNodeBuilder(body);
-      }
+      builder(body);
       $("modal").style.display="flex";
     }
     function closeModal(){ $("modal").style.display="none"; }
@@ -1305,7 +1425,7 @@
           body.appendChild(div);
           return;
         }
-        arr.slice(0,60).forEach((x)=>{
+        arr.slice(0,80).forEach((x)=>{
           const div=document.createElement("div");
           div.className="item";
           const t=new Date(x.at);
@@ -1319,13 +1439,11 @@
             <div class="q">${x.question}</div>
             <div class="tagline">
               <span class="tiny">ID: ${x.id.slice(0,18)}…</span>
-              <button class="btn" data-reopen="${x.id}">다시 열기</button>
+              <button class="btn">다시 열기</button>
             </div>
           `;
           body.appendChild(div);
-
-          const btn=div.querySelector("button[data-reopen]");
-          btn.onclick = ()=>{
+          div.querySelector("button").onclick = ()=>{
             state.activeRarity = (x.rarity==="legendary")?RARITIES[2]:(x.rarity==="rare")?RARITIES[1]:RARITIES[0];
             setRarityUI(state.activeRarity);
             closeModal();
@@ -1342,9 +1460,28 @@
         wrap.className="item";
         wrap.innerHTML = `
           <div class="meta">완료한 날은 더 밝게 표시돼요. (하루 1회 이상 완료 시)</div>
-          <div class="cal" id="calGrid"></div>
+
+          <div style="margin-top:10px;">
+            <div class="meta">📌 오늘의 계획</div>
+            <textarea id="planInput" rows="3"
+              style="width:100%; border-radius:16px; padding:12px; border:1px solid rgba(255,255,255,.14);
+                     background:rgba(255,255,255,.06); color:#fff; outline:none; resize:vertical;"
+              placeholder="당신만의 독창성을 보여주세요!"></textarea>
+            <div class="tagline" style="margin-top:10px; justify-content:center;">
+              <button class="btn" id="savePlanBtn">저장</button>
+            </div>
+          </div>
+
+          <div class="cal" id="calGrid" style="margin-top:10px;"></div>
         `;
         body.appendChild(wrap);
+
+        const pi = wrap.querySelector("#planInput");
+        pi.value = getPlanForDay(todayKey());
+        wrap.querySelector("#savePlanBtn").onclick = ()=>{
+          setPlanForDay(todayKey(), pi.value);
+          showToast("오늘 계획 저장 완료!");
+        };
 
         const g = wrap.querySelector("#calGrid");
         const d = new Date();
@@ -1361,10 +1498,6 @@
       });
     }
 
-    function getSettings(){
-      return safeJSONGet(LS.SETTINGS, { enable3D:true, lite:false });
-    }
-    function setSettings(s){ safeJSONSet(LS.SETTINGS, s); }
     function renderSettingsModal(){
       const s=getSettings();
       openModal("⚙️ 설정", (body)=>{
@@ -1389,6 +1522,7 @@
           ns.enable3D=!ns.enable3D;
           setSettings(ns);
           showToast(`3D ${ns.enable3D?"ON":"OFF"}`);
+          if(window.__threeApi) window.__threeApi.setEnabled(ns.enable3D);
           closeModal();
           renderSettingsModal();
         };
@@ -1402,7 +1536,7 @@
           renderSettingsModal();
         };
         box.querySelector("#resetData").onclick = ()=>{
-          const ok = confirm("정말 초기화할까요? (기록/스트릭/선호/키 포함)");
+          const ok = confirm("정말 초기화할까요? (기록/스트릭/선호/키/답변 포함)");
           if(!ok) return;
           Object.values(LS).forEach(k=> localStorage.removeItem(k));
           showToast("초기화 완료");
@@ -1411,8 +1545,82 @@
       });
     }
 
+    function renderMyBoardModal(){
+      openModal("🧾 내 게시판", (body)=>{
+        const u=getUser();
+        const all=getAnswers();
+        const keys = Object.keys(all).sort((a,b)=> (all[b].at||"").localeCompare(all[a].at||""));
+
+        const head=document.createElement("div");
+        head.className="item";
+        head.innerHTML = `
+          <div class="meta">내 닉네임</div>
+          <div class="tagline" style="justify-content:space-between;">
+            <div class="tiny">닉네임: <b>${u.nick}</b></div>
+            <div class="tiny">저장된 답변: <b>${keys.length}</b></div>
+          </div>
+          <div class="tagline" style="margin-top:10px;">
+            <input id="nickEdit" placeholder="닉네임 변경(최대 12자)"
+              style="flex:1;min-width:180px;border-radius:12px;padding:10px;border:1px solid rgba(255,255,255,.14);
+                     background:rgba(255,255,255,.06);color:#fff;outline:none;">
+            <button class="btn" id="saveNick">저장</button>
+          </div>
+        `;
+        body.appendChild(head);
+
+        head.querySelector("#saveNick").onclick = ()=>{
+          setUserNick(head.querySelector("#nickEdit").value);
+          showToast("닉네임 저장!");
+          closeModal();
+          renderMyBoardModal();
+        };
+
+        if(keys.length===0){
+          const empty=document.createElement("div");
+          empty.className="item";
+          empty.innerHTML = `<div class="meta">아직 저장된 답변이 없어요. 질문 화면에서 ‘답변 저장’을 눌러보세요.</div>`;
+          body.appendChild(empty);
+          return;
+        }
+
+        keys.slice(0,100).forEach((id)=>{
+          const x=all[id];
+          const div=document.createElement("div");
+          div.className="item";
+          div.innerHTML = `
+            <div class="meta">${new Date(x.at).toLocaleString()} · [${x.cat}] · ${x.rarity==="legendary"?"전설":x.rarity==="rare"?"희귀":"일반"}</div>
+            <div class="q" style="margin-top:8px;">${x.q}</div>
+            <div class="meta" style="margin-top:10px;">내 답변</div>
+            <div class="q" style="font-weight:800;opacity:.95;white-space:pre-wrap;">${x.text}</div>
+            <div class="tagline" style="margin-top:10px;">
+              <button class="btn" data-reopen>질문 다시 보기</button>
+              <button class="btn" data-del>삭제</button>
+            </div>
+          `;
+          body.appendChild(div);
+
+          div.querySelector("button[data-reopen]").onclick = ()=>{
+            closeModal();
+            state.activeRarity = RARITIES.find(r=>r.key===x.rarity) || RARITIES[0];
+            setRarityUI(state.activeRarity);
+            openQuestionScreen({ id, cat:x.cat, mood:x.mood, text:x.q });
+          };
+          div.querySelector("button[data-del]").onclick = ()=>{
+            const ok = confirm("이 답변을 삭제할까요?");
+            if(!ok) return;
+            const all2=getAnswers();
+            delete all2[id];
+            setAnswers(all2);
+            showToast("삭제 완료");
+            closeModal();
+            renderMyBoardModal();
+          };
+        });
+      });
+    }
+
     /* ===========================
-      8) SOUND (simple synth)
+      8) SOUND
     =========================== */
     const sfx = (() => {
       let ctx=null;
@@ -1436,11 +1644,96 @@
         click(){ tone(520,0.05,"triangle",0.07); },
         insert(){ tone(520,0.06,"triangle",0.08); tone(740,0.06,"triangle",0.06); },
         open(){ tone(170,0.10,"sawtooth",0.08); tone(420,0.12,"triangle",0.06); },
-        rare(){ tone(660,0.06,"sine",0.08); tone(990,0.08,"sine",0.06); },
-        legendary(){ tone(660,0.08,"sine",0.08); tone(990,0.10,"sine",0.07); tone(1320,0.12,"sine",0.05); },
+        rare(){
+          tone(196,0.18,"sawtooth",0.10);
+          tone(294,0.22,"triangle",0.08);
+          tone(392,0.24,"sine",0.07);
+          setTimeout(()=>tone(523,0.26,"sine",0.07),120);
+          setTimeout(()=>tone(659,0.28,"sine",0.06),240);
+        },
+        legendary(){
+          tone(110,0.35,"sawtooth",0.11);
+          tone(165,0.38,"sawtooth",0.09);
+          setTimeout(()=>tone(220,0.22,"triangle",0.08),80);
+          setTimeout(()=>tone(330,0.22,"triangle",0.08),160);
+          setTimeout(()=>tone(440,0.20,"sine",0.08),240);
+          setTimeout(()=>tone(660,0.18,"sine",0.08),320);
+          setTimeout(()=>tone(880,0.18,"sine",0.07),420);
+          setTimeout(()=>tone(55,0.22,"square",0.12),520);
+          setTimeout(()=>tone(55,0.28,"square",0.10),820);
+          setTimeout(()=>{ tone(990,0.16,"sine",0.06); tone(1320,0.18,"sine",0.05); },1050);
+        },
         reveal(){ tone(880,0.12,"sine",0.08); },
         fail(){ tone(140,0.10,"square",0.06); },
       };
+    })();
+
+    const bgm = (() => {
+      let ctx=null, playing=false;
+      function getCtx(){
+        ctx = ctx || new (window.AudioContext||window.webkitAudioContext)();
+        return ctx;
+      }
+      function playEpic5s(){
+        if(playing) return;
+        if(!state.soundOn) return;
+
+        const c = getCtx();
+        playing = true;
+
+        const master = c.createGain();
+        master.gain.value = 0.08;
+        master.connect(c.destination);
+
+        const delay = c.createDelay(0.25);
+        delay.delayTime.value = 0.18;
+        const fb = c.createGain();
+        fb.gain.value = 0.32;
+        delay.connect(fb);
+        fb.connect(delay);
+        delay.connect(master);
+
+        function tone(freq, t0, dur, type="sine", gain=0.18){
+          const o = c.createOscillator();
+          const g = c.createGain();
+          o.type = type;
+          o.frequency.setValueAtTime(freq, t0);
+          g.gain.setValueAtTime(0.0001, t0);
+          g.gain.exponentialRampToValueAtTime(gain, t0+0.02);
+          g.gain.exponentialRampToValueAtTime(0.0001, t0+dur);
+          o.connect(g); g.connect(master);
+          g.connect(delay);
+          o.start(t0);
+          o.stop(t0+dur+0.02);
+        }
+
+        const start = c.currentTime + 0.01;
+        const chords = [
+          [220, 277.18, 329.63],
+          [196, 246.94, 293.66],
+          [174.61, 220, 261.63],
+          [196, 246.94, 293.66],
+        ];
+
+        let t = start;
+        chords.forEach((ch, i) => {
+          const dur = 1.15;
+          ch.forEach((f) => {
+            tone(f, t, dur, "sine", 0.08);
+            tone(f*2, t, dur, "triangle", 0.05);
+          });
+          tone(55, t+0.02, 0.18, "square", 0.04);
+          tone(55, t+0.52, 0.18, "square", 0.035);
+          if(i===3){
+            tone(440, t+0.80, 0.35, "sine", 0.06);
+            tone(660, t+0.92, 0.35, "sine", 0.05);
+          }
+          t += 1.15;
+        });
+
+        setTimeout(()=>{ playing=false; }, 5200);
+      }
+      return { playEpic5s };
     })();
 
     /* ===========================
@@ -1454,10 +1747,19 @@
         showToast("열쇠가 없어요. (광고로 +1 가능)");
         return;
       }
+
       state.opening = true;
+
+      // ✅ UI 임팩트(펀치)
+      const card = $("sceneCard");
+      card.classList.add("hit");
+      setTimeout(()=>card.classList.remove("hit"), 240);
+
       useKey();
       renderKeys();
+      bgm.playEpic5s();
 
+      // ✅ open 시 rarity 확정(여기가 진짜)
       const rng = seededRng(`open|${todayKey()}|${state.activeCat}|${Date.now()}|${Math.random()}`);
       state.activeRarity = rollRarity(rng);
       setRarityUI(state.activeRarity);
@@ -1467,7 +1769,7 @@
       else sfx.insert?.();
 
       $("sceneMini").textContent = "열쇠를 사용하는 중…";
-      runProgress(2900);
+      runProgress(2600);
 
       const settings = getSettings();
       const can3D = settings.enable3D && window.__threeApi && window.__threeReady;
@@ -1492,11 +1794,11 @@
         sfx.reveal?.();
         setTimeout(()=> openQuestionScreen(prompt), 120);
         state.opening = false;
-      }, 2900);
+      }, 2600);
     }
 
     /* ===========================
-      10) SHARE CARD (Canvas -> Image)
+      10) SHARE CARD
     =========================== */
     async function shareCard(prompt){
       const W=1080, H=1920;
@@ -1581,8 +1883,7 @@
       ctx.closePath();
     }
     function wrapText(ctx, text, x, y, maxWidth, lineHeight, maxLines){
-      // 한국어는 공백이 적을 수 있어 “문장 단위”로 분리 보조
-      const parts = text.split(" ");
+      const parts = String(text||"").split(" ");
       let line="", lines=0;
       for(let i=0;i<parts.length;i++){
         const test = line + parts[i] + " ";
@@ -1597,16 +1898,36 @@
     }
 
     /* ===========================
-      11) EVENTS + INIT
+      11) QUOTES
+    =========================== */
+    const QUOTES = [
+      { q:"시작은 완벽이 아니라 방향이다.", a:"(격언)" },
+      { q:"우리가 반복하는 것이 곧 우리다.", a:"(요지)" },
+      { q:"행동이 불안을 이긴다.", a:"(격언)" },
+      { q:"당신의 시간은 한정되어 있다. 남의 인생을 살지 마라.", a:"(요지)" },
+      { q:"작게라도 꾸준하면, 결국 크게 변한다.", a:"(격언)" },
+    ];
+    function getDailyQuote(){
+      const rng = seededRng("quote|" + todayKey());
+      return QUOTES[Math.floor(rng()*QUOTES.length)];
+    }
+
+    /* ===========================
+      12) INIT + EVENTS
     =========================== */
     function init(){
-      ensureDaily();
+
+ensureDaily();
+setKeys(left()); // ✅ 현재 값을 새 max 규칙으로 즉시 클램프
+
+
 
       state.soundOn = (localStorage.getItem(LS.SOUND) ?? "1") === "1";
       $("soundBtn").textContent = state.soundOn ? "🔊 사운드 ON" : "🔇 사운드 OFF";
 
       setMood(getMood());
 
+      renderTierUI();
       renderCats();
       renderKeys();
       renderPicks();
@@ -1622,13 +1943,14 @@
       showToast(state.soundOn ? "사운드 ON" : "사운드 OFF");
     };
 
-    $("historyBtn").onclick = ()=> renderHistoryModal();
-    $("settingsBtn").onclick = ()=> renderSettingsModal();
+    $("historyBtn").onclick = renderHistoryModal;
+    $("settingsBtn").onclick = renderSettingsModal;
+    $("tierPill").onclick = openTierModal;
 
     $("modalBg").onclick = closeModal;
     $("modalClose").onclick = closeModal;
 
-    $("openCalendar").onclick = ()=> renderCalendarModal();
+    $("openCalendar").onclick = renderCalendarModal;
 
     $("toggleMood").onclick = ()=>{
       const m = getMood()==="light" ? "deep" : "light";
@@ -1652,7 +1974,7 @@
     $("sceneClose").onclick = closeScene;
     $("box3d").onclick = ()=>{
       sfx.click?.();
-      if(!$("scene").style.display || $("scene").style.display!=="flex") return;
+      if($("scene").style.display!=="flex") return;
       openFlow();
     };
 
@@ -1660,13 +1982,17 @@
     $("previewBtn").onclick = previewPrompt;
 
     $("adBtn").onclick = ()=>{
-      alert("🎬 (데모 광고)\n\n안녕하세요, 이윤성입니다.\n사람들이 ‘생각 없이도 하루에 한 번은 성장하게’ 만드는 앱을 만들고 있어요.\n지금은 테스트 중입니다.");
-      addKey(1);
+      alert("🎬 (데모 광고)\n\n안녕하세요! 제이름은 이윤성입니다. 반복되는 삶속에서 새로움을 느끼고, 자기개발에 도움이되는 앱을 만들어보았습니다. 도움이되면 좋겠습니다 감사합니다. ");
+      const ok = addKey(1);
       renderKeys();
-      showToast("열쇠 +1 지급!");
+      if(ok) showToast("열쇠 +1 지급!");
+      else showToast(`이미 최대치예요. (최대 ${getMaxKeys()}개)`);
     };
+
     $("subBtn").onclick = ()=>{
       alert("🌙 (데모)\n결제는 아직 연결 전이에요.\n지금은 UI/흐름만 테스트 중입니다.");
+      // setPremium(true); // 필요하면 테스트로 켜기
+      // renderKeys(); renderTierUI();
     };
 
     $("backBtn").onclick = closeQuestionScreen;
@@ -1706,16 +2032,36 @@
       renderPicks();
     };
 
+    $("quoteBtn").onclick = ()=>{
+      const x=getDailyQuote();
+      openModal("💬 오늘의 명언", (body)=>{
+        const div=document.createElement("div");
+        div.className="item";
+        div.innerHTML = `
+          <div class="meta">오늘(${todayKey()})</div>
+          <div class="q" style="font-size:18px;line-height:1.5;">“${x.q}”</div>
+          <div class="meta" style="margin-top:10px;">— ${x.a}</div>
+        `;
+        body.appendChild(div);
+      });
+    };
+
+    $("saveAnswerBtn").onclick = ()=>{
+      const p = state.currentPrompt;
+      if(!p) return;
+      const ok = saveMyAnswer(p, $("answerInput").value);
+      if(!ok){ showToast("내용을 짧게라도 적어주세요 🙂"); return; }
+      $("answerSavedHint").style.display = "block";
+      showToast("저장 완료!");
+    };
+
+    $("openBoardBtn").onclick = renderMyBoardModal;
+
     init();
   </script>
 
+  <!-- 3D ENGINE -->
   <script>
-    /* ==============================
-       THREE.JS ENGINE (고급 상자 업그레이드)
-       - clearcoat / physical material
-       - brushed metal (procedural)
-       - panel seams / rivets / layered lock
-    ============================== */
     (function startThreeWhenReady(){
       const canvas = document.getElementById("gl");
       const fallbackBox = document.getElementById("fallbackBox");
@@ -1783,7 +2129,6 @@
         const lerp = (a,b,t)=>a+(b-a)*t;
         const easeOutCubic = t => 1 - Math.pow(1-t, 3);
         const easeInOutCubic = t => (t<0.5)?4*t*t*t:1-Math.pow(-2*t+2,3)/2;
-        const clamp = (v,a,b)=>Math.min(b,Math.max(a,v));
 
         function makeBrushedTexture(){
           const c = document.createElement("canvas");
@@ -1831,8 +2176,7 @@
         const lockMat  = makeMat(new THREE.Color("#ffcf7a"), 1.00, 0.16, 1.0, 0.08);
         lockMat.map = brushedTex; lockMat.needsUpdate = true;
 
-        function roundedBox(w,h,d,r,seg=10){
-          // 외부 라이브러리 없이: 세그먼트 많은 박스 + 패널/프레임으로 “라운드 느낌” 강화
+        function roundedBox(w,h,d,seg=10){
           return new THREE.BoxGeometry(w,h,d, seg,seg,seg);
         }
 
@@ -1841,17 +2185,10 @@
         chest.position.set(0, -0.15, 0);
         chest.rotation.set(0.22, -0.35, 0);
 
-        // ===== Chest body (premium panel build) =====
-        const bodyGeo = roundedBox(1.26, 0.74, 0.94, 0.10, 10);
+        const bodyGeo = roundedBox(1.26, 0.74, 0.94, 10);
         const body = new THREE.Mesh(bodyGeo, bodyMatA);
         body.position.set(0, -0.02, 0);
         chest.add(body);
-
-        const shellMat = makeMat(new THREE.Color("#0f122a"), 0.2, 0.85, 0.0, 0.0);
-        shellMat.transparent = true; shellMat.opacity = 0.32;
-        const shell = new THREE.Mesh(new THREE.BoxGeometry(1.30,0.78,0.98), shellMat);
-        shell.position.copy(body.position);
-        chest.add(shell);
 
         const seamMat = makeMat(new THREE.Color("#0b0d18"), 0.15, 0.9, 0.0, 0.0);
         seamMat.transparent = true; seamMat.opacity = 0.55;
@@ -1864,14 +2201,6 @@
         const frontFrame = frame(1.18,0.56,0.02,seamMat);
         frontFrame.position.set(0,-0.04,0.48);
         chest.add(frontFrame);
-
-        const leftFrame = frame(0.02,0.56,0.86,seamMat);
-        leftFrame.position.set(-0.60,-0.04,0.02);
-        chest.add(leftFrame);
-
-        const rightFrame = leftFrame.clone();
-        rightFrame.position.x = 0.60;
-        chest.add(rightFrame);
 
         function bandRing(y){
           const m = new THREE.Mesh(new THREE.TorusGeometry(0.64, 0.05, 16, 96), trimMat);
@@ -1891,39 +2220,13 @@
         hinge.position.set(0, 0.02, -0.47);
         lid.add(hinge);
 
-        const lidMesh = new THREE.Mesh(roundedBox(1.25, 0.46, 0.92, 0.10, 10), bodyMatB);
+        const lidMesh = new THREE.Mesh(roundedBox(1.25, 0.46, 0.92, 10), bodyMatB);
         lidMesh.position.set(0, 0.16, 0.47);
         hinge.add(lidMesh);
-
-        const lidSeam = new THREE.Mesh(new THREE.BoxGeometry(1.16,0.30,0.02), seamMat);
-        lidSeam.position.set(0,0.10,0.93);
-        hinge.add(lidSeam);
 
         const lockBase = new THREE.Mesh(new THREE.BoxGeometry(0.44,0.34,0.12), lockMat);
         lockBase.position.set(0,-0.01,0.48);
         chest.add(lockBase);
-
-        const lockInsetMat = makeMat(new THREE.Color("#2b1b07"), 0.25, 0.8, 0.0, 0.0);
-        lockInsetMat.transparent=true; lockInsetMat.opacity=0.55;
-        const lockInset = new THREE.Mesh(new THREE.BoxGeometry(0.34,0.24,0.08), lockInsetMat);
-        lockInset.position.set(0,-0.02,0.535);
-        chest.add(lockInset);
-
-        const keyHole = new THREE.Mesh(
-          new THREE.CylinderGeometry(0.060, 0.060, 0.07, 36),
-          makeMat(new THREE.Color("#07070c"), 0.1, 0.9, 0.0, 0.0)
-        );
-        keyHole.rotation.x = Math.PI/2;
-        keyHole.position.set(0, -0.03, 0.565);
-        chest.add(keyHole);
-
-        const rivetMat = makeMat(new THREE.Color("#ffe2a6"), 1.0, 0.25, 1.0, 0.12);
-        function rivet(x,y,z){
-          const r = new THREE.Mesh(new THREE.SphereGeometry(0.018, 16, 16), rivetMat);
-          r.position.set(x,y,z);
-          chest.add(r);
-        }
-        [-0.16,0.16].forEach(x=>{ rivet(x,0.09,0.48); rivet(x,-0.18,0.48); });
 
         const coreMat = new THREE.MeshPhysicalMaterial({
           color: new THREE.Color("#ffffff"),
@@ -1938,9 +2241,15 @@
         core.position.set(0, 0.05, 0.0);
         chest.add(core);
 
-        // stars
+        // ✅ 전설/희귀 후광 링 (체감 "우와" 요소)
+        const haloMat = new THREE.MeshBasicMaterial({ color:0xffffff, transparent:true, opacity:0.0, side:THREE.DoubleSide });
+        const halo = new THREE.Mesh(new THREE.RingGeometry(0.22, 0.40, 96), haloMat);
+        halo.rotation.x = Math.PI/2;
+        halo.position.set(0, 0.05, 0.0);
+        chest.add(halo);
+
         const starGeo = new THREE.BufferGeometry();
-        const starN = 180;
+        const starN = 160;
         const starPos = new Float32Array(starN*3);
         for(let i=0;i<starN;i++){
           starPos[i*3+0] = (Math.random()*2-1) * 2.2;
@@ -1953,8 +2262,9 @@
         stage.add(stars);
 
         // particles (lite adjustable)
+        let enabled = true;
         let liteMode = false;
-        let pCount = 900;
+        let pCount = 800;
 
         function buildParticles(count){
           const pGeo = new THREE.BufferGeometry();
@@ -1962,66 +2272,40 @@
           const velocities = new Float32Array(count*3);
           const life = new Float32Array(count);
           const maxLife = new Float32Array(count);
-          const sizes = new Float32Array(count);
 
           function resetParticle(i, power=1.0){
             const idx = i*3;
-            const r = Math.random()*0.18;
+            const spread = 0.12 + power*0.35;
+            const r = Math.random()*spread;
             const a = Math.random()*Math.PI*2;
+
             positions[idx+0] = Math.cos(a)*r;
-            positions[idx+1] = 0.02 + Math.random()*0.10;
+            positions[idx+1] = 0.02 + Math.random()*(0.10 + power*0.18);
             positions[idx+2] = Math.sin(a)*r;
 
-            const sp = (0.6 + Math.random()*1.4) * power;
-            velocities[idx+0] = (Math.random()*2-1) * 0.55 * sp;
-            velocities[idx+1] = (0.8 + Math.random()*1.4) * 0.95 * sp;
-            velocities[idx+2] = (Math.random()*2-1) * 0.55 * sp;
+            const sp = (0.8 + Math.random()*2.0) * power;
+            velocities[idx+0] = (Math.random()*2-1) * (0.55 + power*1.35) * sp;
+            velocities[idx+1] = (0.9 + Math.random()*1.8) * (1.2 + power*1.6) * sp;
+            velocities[idx+2] = (Math.random()*2-1) * (0.55 + power*1.35) * sp;
 
-            life[i] = 0.0;
-            maxLife[i] = 0.55 + Math.random()*0.75;
-            sizes[i] = 3.5 + Math.random()*6.0;
+            life[i]=0.0;
+            maxLife[i]=0.45 + Math.random()*(0.70 + power*0.60);
           }
+
           for(let i=0;i<count;i++) resetParticle(i, 0.0);
 
           pGeo.setAttribute("position", new THREE.BufferAttribute(positions, 3));
-          pGeo.setAttribute("aSize", new THREE.BufferAttribute(sizes, 1));
 
-          const pMat = new THREE.ShaderMaterial({
-            transparent:true,
-            depthWrite:false,
-            blending: THREE.AdditiveBlending,
-            uniforms:{
-              uColor:{ value: new THREE.Color("#ffffff") },
-              uOpacity:{ value: 0.0 },
-              uPixelRatio:{ value: renderer.getPixelRatio() }
-            },
-            vertexShader:`
-              attribute float aSize;
-              uniform float uPixelRatio;
-              void main(){
-                vec4 mv = modelViewMatrix * vec4(position, 1.0);
-                gl_Position = projectionMatrix * mv;
-                float size = aSize * uPixelRatio;
-                gl_PointSize = size * (1.0 / max(0.25, -mv.z));
-              }
-            `,
-            fragmentShader:`
-              uniform vec3 uColor;
-              uniform float uOpacity;
-              void main(){
-                vec2 uv = gl_PointCoord - 0.5;
-                float d = dot(uv, uv);
-                float alpha = smoothstep(0.25, 0.0, d);
-                gl_FragColor = vec4(uColor, alpha * uOpacity);
-              }
-            `
+          const pMat = new THREE.PointsMaterial({
+            color:0xffffff, size:0.02, transparent:true, opacity:0.0,
+            depthWrite:false
           });
 
           const points = new THREE.Points(pGeo, pMat);
           points.position.set(0, 0.02, 0.0);
           chest.add(points);
 
-          return { count, pGeo, pMat, points, positions, velocities, life, maxLife, sizes, resetParticle };
+          return { count, pGeo, pMat, points, positions, velocities, life, maxLife, resetParticle };
         }
 
         let P = buildParticles(pCount);
@@ -2041,14 +2325,13 @@
           renderer.setSize(w, h, false);
           camera.aspect = w / h;
           camera.updateProjectionMatrix();
-          P.pMat.uniforms.uPixelRatio.value = renderer.getPixelRatio();
         }
         new ResizeObserver(resize).observe(box3d);
         resize();
 
         let t0 = performance.now();
-        let timeScale = 1.0;
         let animState = "idle";
+        let currentRarityKey = "common";
         let animStart = 0;
         let idlePhase = 0;
         let lidTarget = 0;
@@ -2063,49 +2346,70 @@
             bodyMatB.color.set("#20308e");
             trimMat.color.set("#f1d7a2");
             lockMat.color.set("#ffcf7a");
-            P.pMat.uniforms.uColor.value.set("#ffffff");
+            P.pMat.color.set("#ffffff");
+            coreMat.emissive.set("#ffffff");
+            haloMat.color.set("#ffffff");
           }else if(rKey==="rare"){
             bodyMatA.color.set("#2a9dff");
             bodyMatB.color.set("#1a1e6a");
             trimMat.color.set("#b6a6ff");
             lockMat.color.set("#9bd7ff");
-            P.pMat.uniforms.uColor.value.set("#6dd5ff");
+            P.pMat.color.set("#6dd5ff");
+            coreMat.emissive.set("#6dd5ff");
+            haloMat.color.set("#6dd5ff");
           }else{
             bodyMatA.color.set("#7a48ff");
             bodyMatB.color.set("#1a0b2e");
             trimMat.color.set("#ffd07a");
             lockMat.color.set("#ffd07a");
-            P.pMat.uniforms.uColor.value.set("#ffd07a");
+            P.pMat.color.set("#ffd07a");
+            coreMat.emissive.set("#ffd07a");
+            haloMat.color.set("#ffd07a");
           }
         }
+
         function setAnim(s){ animState=s; animStart=performance.now(); }
 
         function reset(rKey){
           setAnim("idle");
-          lidTarget=0; camZoom=0; shake=0; burstPower=0; glow=0; timeScale=1.0;
-          P.pMat.uniforms.uOpacity.value = 0.0;
+          lidTarget=0; camZoom=0; shake=0; burstPower=0; glow=0;
+          P.pMat.opacity = 0.0;
           coreMat.emissiveIntensity = 0.0;
           coreMat.opacity = 0.0;
-
+          haloMat.opacity = 0.0;
+          halo.scale.setScalar(1.0);
           applyRarityMaterials(rKey || "common");
           for(let i=0;i<P.count;i++) P.resetParticle(i, 0.0);
         }
+
         function playOpen(rKey){
-          applyRarityMaterials(rKey || "common");
+          currentRarityKey = rKey || "common";
+          applyRarityMaterials(currentRarityKey);
+
+          // ✅ 희귀/전설일수록 폭발 강화 + 파티클 수 증가(라이트 제외)
+          const pow = (currentRarityKey==="legendary") ? 1.8 : (currentRarityKey==="rare" ? 1.25 : 1.0);
+          burstPower = pow;
+
+          if(!liteMode){
+            const target = (currentRarityKey==="legendary") ? 1400 : (currentRarityKey==="rare" ? 1000 : 800);
+            if(target !== pCount) rebuildParticles(target);
+          }
+
           setAnim("key");
         }
+
         function setLite(on){
           liteMode = !!on;
-          const target = liteMode ? 420 : 900;
+          const target = liteMode ? 360 : 800;
           if(target !== pCount) rebuildParticles(target);
         }
+        function setEnabled(on){ enabled = !!on; }
 
-        window.__threeApi = { reset, playOpen, setLite };
+        window.__threeApi = { reset, playOpen, setLite, setEnabled };
         window.__threeReady = true;
 
         function updateParticles(dt){
-          if(P.pMat.uniforms.uOpacity.value <= 0.001) return;
-
+          if(P.pMat.opacity <= 0.001) return;
           for(let i=0;i<P.count;i++){
             P.life[i] += dt;
             const m = P.maxLife[i] || 0.8;
@@ -2128,21 +2432,16 @@
         function animate(){
           requestAnimationFrame(animate);
 
-          const enable3D = (()=>{ try{
-            const s = JSON.parse(localStorage.getItem("novel_settings_v2")||"{}");
-            return s.enable3D !== false;
-          }catch(e){ return true; }})();
-
           const now = performance.now();
           const rawDt = Math.min(0.033, (now - t0) / 1000);
           t0 = now;
-          const dt = rawDt * timeScale;
 
           const sceneOpen = (document.getElementById("scene").style.display === "flex");
-          const active = enable3D && sceneOpen;
+          const settings = (()=>{ try{ return JSON.parse(localStorage.getItem("novel_settings_v3")||"{}"); }catch(e){ return {}; }})();
+          const active = enabled && (settings.enable3D !== false) && sceneOpen;
 
           if(active){
-            idlePhase += dt;
+            idlePhase += rawDt;
             const floatY = Math.sin(idlePhase * 1.9) * 0.03;
             const floatR = Math.sin(idlePhase * 1.3) * 0.04;
             chest.position.y = -0.15 + floatY;
@@ -2155,7 +2454,9 @@
             glow = lerp(glow, 0.06, 0.05);
             coreMat.emissiveIntensity = glow * 0.9;
             coreMat.opacity = glow * 0.6;
-            P.pMat.uniforms.uOpacity.value = lerp(P.pMat.uniforms.uOpacity.value, 0.0, 0.08);
+            haloMat.opacity = lerp(haloMat.opacity, 0.0, 0.08);
+            halo.scale.setScalar( lerp(halo.scale.x, 1.0, 0.08) );
+            P.pMat.opacity = lerp(P.pMat.opacity, 0.0, 0.08);
             lidTarget = lerp(lidTarget, 0.0, 0.08);
             camZoom = lerp(camZoom, 0.0, 0.06);
           }
@@ -2169,49 +2470,53 @@
             coreMat.emissiveIntensity = glow * 1.35;
             coreMat.opacity = glow * 0.75;
 
-            chest.position.y = -0.15 + Math.sin(e*Math.PI) * 0.015;
-
             if(t >= 0.80){
               setAnim("impact");
-              timeScale = 0.35;
-
-              burstPower = 1.0;
-              P.pMat.uniforms.uOpacity.value = 0.0;
+              P.pMat.opacity = 0.0;
               for(let i=0;i<P.count;i++) P.resetParticle(i, burstPower);
-
               shake = 1.0;
             }
           }
 
           if(animState === "impact"){
+            const pow = (currentRarityKey==="legendary") ? 1.75 : (currentRarityKey==="rare" ? 1.25 : 1.0);
             const k = clamp(t/0.35, 0, 1);
             easeOutCubic(k);
 
-            P.pMat.uniforms.uOpacity.value = lerp(P.pMat.uniforms.uOpacity.value, 0.95, 0.18);
-            glow = lerp(glow, 0.95, 0.18);
-            coreMat.emissiveIntensity = glow * 2.0;
-            coreMat.opacity = 0.95;
-            camZoom = lerp(camZoom, 0.95, 0.10);
+            P.pMat.opacity = lerp(P.pMat.opacity, 0.95, 0.18);
 
+            glow = lerp(glow, 0.95*pow, 0.18);
+            coreMat.emissiveIntensity = glow * (2.0*pow);
+            coreMat.opacity = Math.min(0.98, 0.95*pow);
+
+            camZoom = lerp(camZoom, 0.95*pow, 0.10);
             shake = lerp(shake, 0.0, 0.10);
 
+            // ✅ 후광 링(전설일수록 강하게)
+            haloMat.opacity = lerp(haloMat.opacity, (currentRarityKey==="legendary") ? 0.85 : (currentRarityKey==="rare" ? 0.45 : 0.0), 0.18);
+            halo.scale.setScalar( lerp(halo.scale.x, 1.35, 0.12) );
+
             if(t >= 0.35){
-              timeScale = 1.0;
               setAnim("open");
             }
           }
 
           if(animState === "open"){
+            const pow = (currentRarityKey==="legendary") ? 1.45 : (currentRarityKey==="rare" ? 1.15 : 1.0);
             const k = clamp(t/1.0, 0, 1);
             easeInOutCubic(k);
 
-            lidTarget = lerp(lidTarget, -1.35, 0.12);
-            camZoom = lerp(camZoom, 0.8, 0.08);
-            P.pMat.uniforms.uOpacity.value = lerp(P.pMat.uniforms.uOpacity.value, 0.85, 0.06);
+            lidTarget = lerp(lidTarget, -1.35 * pow, 0.12);
+            camZoom = lerp(camZoom, 0.8 * pow, 0.08);
 
-            glow = lerp(glow, 1.05, 0.08);
-            coreMat.emissiveIntensity = glow * 2.1;
-            coreMat.opacity = lerp(coreMat.opacity, 0.95, 0.07);
+            P.pMat.opacity = lerp(P.pMat.opacity, 0.85, 0.06);
+
+            glow = lerp(glow, 1.05 * pow, 0.08);
+            coreMat.emissiveIntensity = glow * (2.1 * pow);
+            coreMat.opacity = lerp(coreMat.opacity, Math.min(0.98, 0.95*pow), 0.07);
+
+            haloMat.opacity = lerp(haloMat.opacity, (currentRarityKey==="legendary") ? 0.75 : (currentRarityKey==="rare" ? 0.35 : 0.0), 0.08);
+            halo.scale.setScalar( lerp(halo.scale.x, (currentRarityKey==="legendary") ? 1.55 : 1.25, 0.08) );
 
             if(t >= 1.0){
               setAnim("reveal");
@@ -2219,14 +2524,13 @@
           }
 
           if(animState === "reveal"){
-            P.pMat.uniforms.uOpacity.value = lerp(P.pMat.uniforms.uOpacity.value, 0.0, 0.09);
+            P.pMat.opacity = lerp(P.pMat.opacity, 0.0, 0.09);
             coreMat.opacity = lerp(coreMat.opacity, 0.0, 0.08);
             coreMat.emissiveIntensity = lerp(coreMat.emissiveIntensity, 0.0, 0.08);
+            haloMat.opacity = lerp(haloMat.opacity, 0.0, 0.10);
+            halo.scale.setScalar( lerp(halo.scale.x, 1.0, 0.10) );
             camZoom = lerp(camZoom, 0.0, 0.08);
-
-            if(t >= 0.65){
-              setAnim("idle");
-            }
+            if(t >= 0.65) setAnim("idle");
           }
 
           hinge.rotation.x = lerp(hinge.rotation.x, lidTarget, 0.12);
@@ -2244,14 +2548,14 @@
             stage.position.lerp(new THREE.Vector3(0,0,0), 0.15);
           }
 
-          if(active) updateParticles(dt);
+          if(active) updateParticles(rawDt);
 
           starMat.opacity = 0.28 + Math.sin(now*0.0012)*0.07;
           renderer.render(scene3, camera);
         }
 
         try{
-          const s = JSON.parse(localStorage.getItem("novel_settings_v2")||"{}");
+          const s = JSON.parse(localStorage.getItem("novel_settings_v3")||"{}");
           setLite(!!s.lite);
         }catch(e){}
         reset("common");
