@@ -1,0 +1,2265 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>오늘의 새로움</title>
+  <style>
+    :root{
+      --bg1:#070913; --bg2:#0d1020;
+      --line: rgba(255,255,255,.12);
+      --text: rgba(255,255,255,.92);
+      --muted: rgba(255,255,255,.68);
+      --card: rgba(255,255,255,.07);
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Apple SD Gothic Neo";
+      color:var(--text);
+      min-height:100vh;
+      background:
+        radial-gradient(900px 520px at 15% 10%, rgba(109,213,255,.18), transparent 60%),
+        radial-gradient(900px 520px at 90% 0%, rgba(155,123,255,.16), transparent 60%),
+        radial-gradient(900px 520px at 80% 90%, rgba(255,208,122,.10), transparent 60%),
+        linear-gradient(180deg, var(--bg1), var(--bg2));
+      overflow-x:hidden;
+    }
+    .wrap{max-width:1120px;margin:0 auto;padding:18px 16px 28px;}
+    .topbar{
+      position:sticky;top:0;z-index:5;
+      display:flex;align-items:center;justify-content:space-between;gap:14px;
+      padding:14px 0 12px;
+      backdrop-filter: blur(14px);
+    }
+    .brand h1{margin:0;font-size:18px;letter-spacing:-.2px}
+    .brand p{margin:6px 0 0;font-size:12px;color:var(--muted)}
+    .actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+    .pill{
+      border:1px solid var(--line);
+      background: rgba(12,12,20,.55);
+      color: var(--text);
+      border-radius: 14px;
+      padding:10px 12px;
+      font-size:12px;
+      cursor:pointer;
+      display:flex;align-items:center;gap:8px;
+      user-select:none;
+      transition: transform .08s ease;
+    }
+    .pill:active{transform:scale(.98)}
+    .pill strong{font-size:14px}
+    .pill.primary{
+      background: linear-gradient(180deg, rgba(255,255,255,.16), rgba(255,255,255,.06));
+    }
+
+    /* ---- Home: Today Picks ---- */
+    .todayRow{ margin-top:10px; display:grid; gap:10px; }
+    @media (min-width:860px){ .todayRow{grid-template-columns: 1.35fr .65fr;} }
+    .panel{
+      border:1px solid var(--line);
+      background: rgba(12,12,20,.46);
+      border-radius:18px;
+      padding:14px;
+      box-shadow: 0 18px 60px rgba(0,0,0,.22);
+      backdrop-filter: blur(14px);
+    }
+    .panelHead{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;}
+    .panelHead .h{font-weight:1000;letter-spacing:-.2px}
+    .panelHead .s{margin-top:6px;font-size:12px;color:var(--muted);line-height:1.35}
+    .panelBtns{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+    .btn{
+      border:1px solid rgba(255,255,255,.16);
+      background: rgba(255,255,255,.06);
+      color:#fff;
+      border-radius: 14px;
+      padding:10px 12px;
+      font-weight:900;
+      cursor:pointer;
+    }
+    .btn:active{transform:scale(.98)}
+    .btn.primary{background:#fff;color:#000;border-color:#fff}
+    .btn.ghost{background: rgba(0,0,0,.22)}
+    .picks{ margin-top:12px; display:grid; gap:10px; }
+    @media (min-width:560px){ .picks{grid-template-columns: repeat(3,1fr);} }
+    .pick{
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.05);
+      border-radius:16px;
+      padding:12px;
+      display:flex;flex-direction:column;gap:8px;
+      cursor:pointer;
+      transition: transform .08s ease, border-color .2s ease;
+    }
+    .pick:hover{border-color: rgba(255,255,255,.16)}
+    .pick:active{transform:scale(.99)}
+    .pick .meta{display:flex;align-items:center;justify-content:space-between;gap:10px}
+    .badge{
+      font-size:11px;
+      padding:5px 8px;border-radius:999px;
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(0,0,0,.20);
+      color: rgba(255,255,255,.82);
+      white-space:nowrap;
+    }
+    .pick .q{font-weight:950;line-height:1.32;letter-spacing:-.2px}
+    .pick .sub{font-size:11px;color:var(--muted);line-height:1.3}
+    .statsBox{display:grid;gap:10px;}
+    .stat{
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.05);
+      border-radius:16px;
+      padding:12px;
+      display:flex;align-items:center;justify-content:space-between;gap:10px;
+    }
+    .stat .k{font-size:12px;color:var(--muted)}
+    .stat .v{font-weight:1000;font-size:14px}
+    .miniRow{display:flex;gap:10px;flex-wrap:wrap}
+
+    /* ---- Category grid ---- */
+    .grid{
+      display:grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap:10px;
+      margin-top:12px;
+    }
+    @media (min-width:640px){.grid{grid-template-columns:repeat(4,1fr)}}
+    @media (min-width:980px){.grid{grid-template-columns:repeat(5,1fr)}}
+    .cat{
+      border:1px solid var(--line);
+      background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.03));
+      border-radius: 18px;
+      padding:14px 12px;
+      min-height:90px;
+      cursor:pointer;
+      display:flex;flex-direction:column;justify-content:space-between;
+      transition: transform .08s ease, border-color .2s ease;
+      user-select:none;
+    }
+    .cat:hover{border-color: rgba(255,255,255,.18)}
+    .cat:active{transform: scale(.98)}
+    .cat .emoji{font-size:22px}
+    .cat .name{font-size:13px;font-weight:800;opacity:.95}
+    .cat .hint{font-size:11px;color:var(--muted);line-height:1.25}
+
+    .bottom{margin-top:14px;display:grid;gap:10px;}
+    @media (min-width:760px){.bottom{grid-template-columns: 1fr 1fr}}
+    .cta{
+      border:1px solid var(--line);
+      background: rgba(12,12,20,.55);
+      border-radius:18px;
+      padding:14px;
+      display:flex;align-items:center;justify-content:space-between;gap:12px;
+    }
+    .cta .t{font-weight:950}
+    .cta .d{margin-top:6px;font-size:12px;color:var(--muted);line-height:1.35}
+    .cta button{
+      border:1px solid rgba(255,255,255,.20);
+      background:#fff;color:#000;
+      border-radius:14px;
+      padding:10px 12px;
+      font-weight:950;
+      cursor:pointer;
+      white-space:nowrap;
+    }
+    .cta button:active{transform:scale(.98)}
+
+    .toast{
+      position:fixed;left:50%;bottom:18px;transform:translateX(-50%);
+      background: rgba(16,16,26,.92);
+      border:1px solid rgba(255,255,255,.12);
+      border-radius: 14px;
+      padding:10px 12px;
+      font-size:12px;
+      color:var(--text);
+      backdrop-filter: blur(12px);
+      display:none;
+      z-index:90;
+      max-width:min(720px,92vw);
+      text-align:center;
+    }
+
+    /* ===== Scene ===== */
+    .scene{
+      position:fixed;inset:0;display:none;
+      align-items:center;justify-content:center;
+      z-index:30;overflow:hidden;
+    }
+    .sceneBg{
+      position:absolute;inset:0;
+      background:
+        radial-gradient(900px 500px at 20% 20%, rgba(255,255,255,.08), transparent 60%),
+        radial-gradient(900px 500px at 80% 10%, rgba(109,213,255,.10), transparent 60%),
+        radial-gradient(900px 500px at 80% 80%, rgba(155,123,255,.10), transparent 60%),
+        linear-gradient(180deg, rgba(0,0,0,.25), rgba(0,0,0,.92));
+      backdrop-filter: blur(8px);
+    }
+    .sceneCard{
+      position:relative;
+      width:min(760px, 94vw);
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(10,10,18,.40);
+      border-radius: 24px;
+      padding:18px;
+      box-shadow: 0 40px 120px rgba(0,0,0,.7);
+      backdrop-filter: blur(16px);
+      transform: translateZ(0);
+    }
+    .sceneTop{
+      display:flex;align-items:center;justify-content:space-between;gap:10px;
+      margin-bottom:14px;
+    }
+    .sceneTop .title{font-weight:1000;letter-spacing:-.3px}
+    .sceneTop .mini{margin-top:6px;font-size:12px;color:var(--muted)}
+    .closeX{
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(0,0,0,.28);
+      color:#fff;
+      border-radius: 14px;
+      padding:10px 12px;
+      cursor:pointer;
+      font-weight:850;
+    }
+    .closeX:active{transform:scale(.98)}
+
+    .boxArea{display:flex;flex-direction:column;align-items:center;gap:10px;padding:6px 0 2px;}
+    .boxHint{font-size:12px;color:var(--muted);text-align:center;line-height:1.4}
+
+    .sceneControls{
+      margin-top:10px;
+      display:flex;gap:8px;flex-wrap:wrap;justify-content:center;
+    }
+
+    /* 3D canvas container */
+    .canvasWrap{
+      width:min(580px, 92vw);
+      height:350px;
+      border-radius: 22px;
+      border:1px solid rgba(255,255,255,.14);
+      background:
+        radial-gradient(240px 180px at 30% 25%, rgba(255,255,255,.10), transparent 62%),
+        radial-gradient(260px 220px at 70% 70%, rgba(109,213,255,.10), transparent 60%),
+        linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
+      overflow:hidden;
+      position:relative;
+      box-shadow: 0 18px 60px rgba(0,0,0,.45);
+      cursor:pointer;
+      user-select:none;
+    }
+    canvas{display:block;width:100%;height:100%}
+
+    /* Fallback */
+    .fallbackBox{
+      position:absolute;inset:0;
+      display:none;
+      align-items:center;justify-content:center;
+      font-weight:1000; letter-spacing:-.3px;
+      color:rgba(255,255,255,.92);
+      text-shadow:0 0 22px rgba(255,255,255,.12);
+    }
+    .fallbackBox .fbCard{
+      width:240px;height:170px;border-radius:22px;
+      border:1px solid rgba(255,255,255,.14);
+      background:
+        radial-gradient(140px 100px at 30% 25%, rgba(255,255,255,.22), transparent 60%),
+        radial-gradient(180px 140px at 75% 70%, rgba(109,213,255,.18), transparent 62%),
+        linear-gradient(180deg, rgba(120,80,255,.55), rgba(40,60,160,.55));
+      box-shadow: 0 22px 80px rgba(0,0,0,.55);
+      display:flex;align-items:center;justify-content:center;
+      transform: rotateX(12deg) rotateY(-18deg);
+    }
+
+    .overlayFX{position:absolute;inset:0;pointer-events:none;}
+    .flash{
+      position:absolute;inset:-40%;
+      background: radial-gradient(circle at 50% 55%, rgba(255,255,255,.92), transparent 46%);
+      opacity:0;
+      transform: scale(1.05);
+      filter: blur(1px);
+    }
+    .flash.on{animation: flash 520ms ease-out forwards;}
+    @keyframes flash{0%{opacity:0}18%{opacity:1}100%{opacity:0}}
+
+    .rarityTag{
+      position:absolute;left:14px;top:14px;
+      padding:8px 10px;border-radius:999px;
+      border:1px solid rgba(255,255,255,.16);
+      background: rgba(0,0,0,.28);
+      font-size:12px;
+      display:flex;align-items:center;gap:8px;
+      opacity:.95;
+    }
+    .rarityDot{width:10px;height:10px;border-radius:999px;background:#fff;box-shadow:0 0 18px rgba(255,255,255,.35)}
+    .tapHint{
+      position:absolute;right:14px;top:14px;
+      padding:8px 10px;border-radius:999px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(0,0,0,.22);
+      font-size:12px;color:rgba(255,255,255,.78);
+    }
+
+    .progress{width:min(580px,92vw);height:8px;border-radius:999px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);overflow:hidden;margin-top:10px;display:none}
+    .progress > div{height:100%;width:0%;background:rgba(255,255,255,.86);border-radius:999px;transition:width .15s linear}
+
+    /* question screen */
+    .qs{position:fixed;inset:0;display:none;z-index:40;background:#000;}
+    .sparkBg{
+      position:absolute;inset:0;
+      background:
+        radial-gradient(2px 2px at 20% 30%, rgba(255,255,255,.85), transparent 60%),
+        radial-gradient(2px 2px at 60% 45%, rgba(255,255,255,.75), transparent 60%),
+        radial-gradient(2px 2px at 80% 25%, rgba(255,255,255,.72), transparent 60%),
+        radial-gradient(2px 2px at 35% 70%, rgba(255,255,255,.65), transparent 60%),
+        radial-gradient(2px 2px at 70% 78%, rgba(255,255,255,.70), transparent 60%);
+      opacity:.35;animation:tw 2.2s ease-in-out infinite;pointer-events:none;
+    }
+    @keyframes tw{0%,100%{opacity:.25}50%{opacity:.45}}
+    .qWrap{max-width:860px;margin:0 auto;padding:28px 18px;height:100%;display:flex;flex-direction:column;gap:14px;justify-content:center;}
+    .qMeta{text-align:center;font-size:12px;color:rgba(255,255,255,.70);letter-spacing:.2px}
+    .qText{
+      text-align:center;font-size:26px;line-height:1.45;font-weight:1000;letter-spacing:-.6px;
+      padding:0 10px;color:#fff;text-shadow:0 0 26px rgba(255,255,255,.14);
+      min-height:120px;
+    }
+    .qTools{
+      display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:6px;
+    }
+    .toolBtn{
+      border:1px solid rgba(255,255,255,.14);
+      background:rgba(255,255,255,.08);
+      color:#fff;
+      border-radius:14px;
+      padding:10px 12px;
+      font-weight:950;
+      cursor:pointer;
+      display:flex;align-items:center;gap:8px;
+    }
+    .toolBtn.primary{background:#fff;color:#000;border-color:#fff}
+    .toolBtn:active{transform:scale(.98)}
+    .qControls{display:flex;flex-direction:column;align-items:center;gap:12px;margin-top:10px;}
+    .checkRow{display:flex;align-items:center;gap:10px;font-size:14px;opacity:.9;user-select:none}
+    .checkRow input{width:18px;height:18px}
+    .qBtns{display:flex;gap:10px;width:min(600px,92vw);}
+    .qBtns button{flex:1;padding:13px 12px;border-radius:14px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.08);color:#fff;cursor:pointer;font-weight:950;}
+    .qBtns button.primary{background:#fff;color:#000;border-color:#fff}
+
+    /* history modal */
+    .modal{
+      position:fixed;inset:0;display:none;z-index:60;align-items:center;justify-content:center;
+    }
+    .modalBg{position:absolute;inset:0;background:rgba(0,0,0,.70);backdrop-filter: blur(10px);}
+    .modalCard{
+      position:relative;width:min(860px,94vw);max-height:min(74vh,620px);
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(12,12,20,.72);
+      border-radius:22px;padding:16px;
+      overflow:hidden;
+    }
+    .modalHead{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px;}
+    .modalHead .h{font-weight:1000}
+    .modalList{overflow:auto;max-height:min(58vh,500px);padding-right:4px;}
+    .item{
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.05);
+      border-radius:16px;
+      padding:12px;
+      margin-bottom:10px;
+    }
+    .item .meta{font-size:11px;color:rgba(255,255,255,.65);display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+    .item .q{margin-top:6px;font-weight:900;line-height:1.35}
+    .tagline{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:6px}
+    .tiny{
+      font-size:11px;color:rgba(255,255,255,.72);
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(0,0,0,.18);
+      border-radius: 999px;
+      padding:5px 8px;
+    }
+
+    /* calendar */
+    .cal{
+      display:grid;gap:8px;margin-top:10px;
+      grid-template-columns: repeat(6, 1fr);
+    }
+    @media (min-width:520px){ .cal{grid-template-columns: repeat(10, 1fr);} }
+    .day{
+      height:26px;border-radius:8px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.04);
+      display:flex;align-items:center;justify-content:center;
+      font-size:10px;color:rgba(255,255,255,.70);
+    }
+    .day.done{
+      background: rgba(255,255,255,.18);
+      border-color: rgba(255,255,255,.18);
+      color: rgba(255,255,255,.95);
+    }
+
+    @media (prefers-reduced-motion: reduce){
+      *{animation:none !important;transition:none !important}
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <div class="topbar">
+      <div class="brand">
+        <h1>🎁 오늘의 새로움</h1>
+        <p>오늘의 새로움을 열어보세요.</p>
+      </div>
+      <div class="actions">
+        <button class="pill" id="historyBtn">📚 기록</button>
+        <button class="pill" id="settingsBtn">⚙️ 설정</button>
+        <div class="pill primary" id="keysPill">🔑 <strong id="keysCount">3</strong> / 3</div>
+        <button class="pill" id="soundBtn">🔊 사운드 ON</button>
+      </div>
+    </div>
+
+    <!-- Today Picks + Stats -->
+    <div class="todayRow">
+      <div class="panel">
+        <div class="panelHead">
+          <div>
+            <div class="h">✨ 오늘의 추천</div>
+            <div class="s">생각 없이도 시작할 수 있게, 오늘 당신에게 맞는 새로움을 골랐어요.</div>
+          </div>
+          <div class="panelBtns">
+            <button class="btn" id="regenPicks">새로고침</button>
+            <button class="btn primary" id="quickOpen">바로 열기</button>
+          </div>
+        </div>
+        <div class="picks" id="picks"></div>
+      </div>
+
+      <div class="panel">
+        <div class="panelHead">
+          <div>
+            <div class="h">📈 성장 기록</div>
+            <div class="s">작아도 좋아요. 매일 한 번이면 충분해요.</div>
+          </div>
+          <div class="panelBtns">
+            <button class="btn ghost" id="openCalendar">캘린더</button>
+          </div>
+        </div>
+
+        <div class="statsBox">
+          <div class="stat">
+            <div>
+              <div class="k">연속 스트릭</div>
+              <div class="v"><span id="streak">0</span>일</div>
+            </div>
+            <div>
+              <div class="k">총 완료</div>
+              <div class="v"><span id="totalDone">0</span>회</div>
+            </div>
+          </div>
+
+          <div class="stat">
+            <div>
+              <div class="k">오늘 완료</div>
+              <div class="v" id="todayDone">아직</div>
+            </div>
+            <div class="miniRow">
+              <span class="badge" id="moodBadge">컨디션: 가벼움</span>
+              <button class="btn" id="toggleMood">컨디션 바꾸기</button>
+            </div>
+          </div>
+
+          <div class="stat">
+            <div>
+              <div class="k">선호 카테고리</div>
+              <div class="v" id="favCats">-</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid" id="grid"></div>
+
+    <div class="bottom">
+      <div class="cta">
+        <div>
+          <div class="t">🎬 광고 보기 (열쇠 +1)</div>
+          <div class="d">광고를 볼 때마다 열쇠 1개를 추가로 받을 수 있어요.</div>
+        </div>
+        <button id="adBtn">광고 보기</button>
+      </div>
+      <div class="cta">
+        <div>
+          <div class="t">🌙 프리미엄</div>
+          <div class="d">월 15,000원 · 광고 제거 + 무제한 열쇠 + 프리미엄 카테고리 잠금 해제</div>
+        </div>
+        <button id="subBtn">프리미엄</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scene -->
+  <div class="scene" id="scene">
+    <div class="sceneBg"></div>
+    <div class="sceneCard" id="sceneCard">
+      <div class="sceneTop">
+        <div>
+          <div class="title" id="sceneTitle">오늘의 상자</div>
+          <div class="mini" id="sceneMini">상자를 클릭해 열어보세요.</div>
+        </div>
+        <button class="closeX" id="sceneClose">닫기</button>
+      </div>
+
+      <div class="boxArea">
+        <div class="boxHint" id="boxHint">열쇠를 사용해 오늘의 새로움을 꺼내보세요.</div>
+
+        <div class="canvasWrap" id="box3d">
+          <canvas id="gl"></canvas>
+
+          <div class="fallbackBox" id="fallbackBox">
+            <div class="fbCard">OPEN</div>
+          </div>
+
+          <div class="overlayFX"><div class="flash" id="flash"></div></div>
+
+          <div class="rarityTag">
+            <span class="rarityDot" id="rarityDot"></span>
+            <span id="rarityText">일반</span>
+          </div>
+
+          <div class="tapHint" id="tapHint">클릭해서 열기</div>
+        </div>
+
+        <div class="sceneControls">
+          <button class="btn" id="rerollBtn">🎲 질문 바꾸기</button>
+          <button class="btn ghost" id="previewBtn">👀 미리보기</button>
+        </div>
+
+        <div class="progress" id="prog"><div id="progBar"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Question Screen -->
+  <div class="qs" id="qs">
+    <div class="sparkBg"></div>
+    <div class="qWrap">
+      <div class="qMeta" id="qMeta"></div>
+      <div class="qText" id="qText"></div>
+
+      <div class="qTools">
+        <button class="toolBtn" id="likeBtn">👍 좋아요</button>
+        <button class="toolBtn" id="dislikeBtn">👎 별로</button>
+        <button class="toolBtn" id="shareBtn">📸 공유 카드</button>
+      </div>
+
+      <div class="qControls">
+        <label class="checkRow">
+          <input type="checkbox" id="doneCheck" />
+          오늘의 새로움을 완료하셨으면 체크해주세요.
+        </label>
+        <div class="qBtns">
+          <button id="backBtn">처음으로</button>
+          <button class="primary" id="finishBtn">완료</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- History/Settings Modal -->
+  <div class="modal" id="modal">
+    <div class="modalBg" id="modalBg"></div>
+    <div class="modalCard">
+      <div class="modalHead">
+        <div class="h" id="modalTitle">📚 기록</div>
+        <button class="closeX" id="modalClose">닫기</button>
+      </div>
+      <div class="modalList" id="modalBody"></div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <!-- Three.js loader (non-module) -->
+  <script>
+    (function loadThree(){
+      const tryLoad = (src) => new Promise((resolve, reject)=>{
+        const s=document.createElement("script");
+        s.src=src; s.onload=()=>resolve(true); s.onerror=()=>reject(new Error("load fail"));
+        document.head.appendChild(s);
+      });
+      tryLoad("https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js")
+        .catch(()=> tryLoad("https://unpkg.com/three@0.160.0/build/three.min.js"))
+        .catch(()=>false);
+    })();
+  </script>
+
+  <script>
+    /* ===========================
+      0) UTIL
+    =========================== */
+    const $ = (id)=>document.getElementById(id);
+    const clamp = (v,a,b)=>Math.min(b,Math.max(a,v));
+    const nowISO = ()=> new Date().toISOString();
+    function todayKey(){
+      const d=new Date();
+      const yy=d.getFullYear();
+      const mm=String(d.getMonth()+1).padStart(2,"0");
+      const dd=String(d.getDate()).padStart(2,"0");
+      return `${yy}-${mm}-${dd}`;
+    }
+    function showToast(msg){
+      const toast = $("toast");
+      toast.textContent = msg;
+      toast.style.display = "block";
+      clearTimeout(showToast._t);
+      showToast._t = setTimeout(()=> toast.style.display="none", 1900);
+    }
+
+    // stable pseudo-random (seeded)
+    function xmur3(str){
+      let h=1779033703 ^ str.length;
+      for(let i=0;i<str.length;i++){
+        h = Math.imul(h ^ str.charCodeAt(i), 3432918353);
+        h = (h<<13) | (h>>>19);
+      }
+      return function(){
+        h = Math.imul(h ^ (h>>>16), 2246822507);
+        h = Math.imul(h ^ (h>>>13), 3266489909);
+        return (h ^= h>>>16) >>> 0;
+      };
+    }
+    function mulberry32(a){
+      return function(){
+        let t = a += 0x6D2B79F5;
+        t = Math.imul(t ^ (t>>>15), t | 1);
+        t ^= t + Math.imul(t ^ (t>>>7), t | 61);
+        return ((t ^ (t>>>14)) >>> 0) / 4294967296;
+      };
+    }
+    function seededRng(seedStr){
+      const seed = xmur3(seedStr)();
+      return mulberry32(seed);
+    }
+    function pick(rng, arr){ return arr[Math.floor(rng()*arr.length)]; }
+
+    // ====== Korean grammar helpers (polite + particles) ======
+    function hasFinalConsonant(korChar){
+      const c = korChar.charCodeAt(0);
+      if(c < 0xAC00 || c > 0xD7A3) return false;
+      return ((c - 0xAC00) % 28) !== 0;
+    }
+    function lastHangulChar(str){
+      for(let i=str.length-1;i>=0;i--){
+        const ch=str[i];
+        if(/[가-힣]/.test(ch)) return ch;
+      }
+      return str[str.length-1] || "";
+    }
+    function particle(word, pair){ // pair: "을/를", "이/가", "은/는", "과/와"
+      const last = lastHangulChar(word);
+      const jong = last && hasFinalConsonant(last);
+      const [a,b]=pair.split("/");
+      if(pair==="과/와") return jong ? "과" : "와";
+      if(pair==="을/를") return jong ? "을" : "를";
+      if(pair==="이/가") return jong ? "이" : "가";
+      if(pair==="은/는") return jong ? "은" : "는";
+      return b;
+    }
+    function tidyKorean(s){
+      return String(s||"")
+        .replace(/\s+/g," ")
+        .replace(/\s([?.!,])/g,"$1")
+        .trim();
+    }
+    function politeQuestion(s){
+      s = tidyKorean(s);
+      if(/[?？]$/.test(s)) return s;
+      if(/(까요|나요|인가요|할까요|될까요|있을까요|없을까요)\s*$/.test(s)) return s + "?";
+      return s.replace(/[.。]$/,"") + "… 어떻게 하실 건가요?";
+    }
+
+    /* ===========================
+      1) STORAGE / STATE
+    =========================== */
+    const LS = {
+      KEYS:"novel_keys",
+      DAY:"novel_day",
+      HIST:"novel_hist_v2",
+      SOUND:"novel_sound",
+      PREF:"novel_pref_v2",
+      DONE:"novel_done_days",
+      STREAK:"novel_streak",
+      LASTDONE:"novel_last_done",
+      TOTALDONE:"novel_total_done",
+      SETTINGS:"novel_settings_v2",
+      RECENT:"novel_recent_ids_v2",
+      PICKS:"novel_today_picks_v2",
+    };
+
+    function safeJSONGet(key, fallback){
+      try{
+        const raw = localStorage.getItem(key);
+        if(!raw) return fallback;
+        return JSON.parse(raw);
+      }catch(e){ return fallback; }
+    }
+    function safeJSONSet(key, obj){
+      try{ localStorage.setItem(key, JSON.stringify(obj)); }catch(e){}
+    }
+
+    function ensureDaily(){
+      const t = todayKey();
+      const last = localStorage.getItem(LS.DAY);
+      if(last !== t){
+        localStorage.setItem(LS.DAY, t);
+        localStorage.setItem(LS.KEYS, "3"); // daily free keys
+        localStorage.removeItem(LS.PICKS);  // daily picks reset
+      }
+    }
+    function left(){ ensureDaily(); return Number(localStorage.getItem(LS.KEYS) || "0"); }
+    function setKeys(n){ localStorage.setItem(LS.KEYS, String(Math.max(0, n))); }
+    function useKey(){ setKeys(left()-1); }
+    function addKey(n=1){ setKeys(left()+n); }
+    function renderKeys(){ $("keysCount").textContent = String(left()); }
+
+    function getHist(){ ensureDaily(); return safeJSONGet(LS.HIST, []); }
+    function pushHist(entry){
+      const arr = getHist();
+      arr.unshift(entry);
+      safeJSONSet(LS.HIST, arr.slice(0,120));
+    }
+
+    function getPref(){
+      return safeJSONGet(LS.PREF, { catOpen:{}, like:{}, dislike:{}, mood:"light" });
+    }
+    function setPref(p){ safeJSONSet(LS.PREF, p); }
+    function bumpCat(cat){
+      const p=getPref();
+      p.catOpen[cat] = (p.catOpen[cat]||0) + 1;
+      setPref(p);
+    }
+    function setMood(mood){
+      const p=getPref(); p.mood=mood; setPref(p);
+      $("moodBadge").textContent = `컨디션: ${mood==="light"?"가벼움":"깊게"}`;
+    }
+    function getMood(){ return (getPref().mood || "light"); }
+
+    function getDoneDays(){ return safeJSONGet(LS.DONE, {}); } // { "YYYY-MM-DD": true }
+    function setDoneDays(x){ safeJSONSet(LS.DONE, x); }
+    function isDoneToday(){
+      const days = getDoneDays();
+      return !!days[todayKey()];
+    }
+
+    function getRecentIds(){ return safeJSONGet(LS.RECENT, []); }
+    function setRecentIds(arr){ safeJSONSet(LS.RECENT, arr.slice(0,120)); }
+
+    function getStreak(){ return Number(localStorage.getItem(LS.STREAK) || "0"); }
+    function setStreak(n){ localStorage.setItem(LS.STREAK, String(Math.max(0,n))); }
+    function getTotalDone(){ return Number(localStorage.getItem(LS.TOTALDONE) || "0"); }
+    function setTotalDone(n){ localStorage.setItem(LS.TOTALDONE, String(Math.max(0,n))); }
+    function getLastDone(){ return localStorage.getItem(LS.LASTDONE) || ""; }
+    function setLastDone(d){ localStorage.setItem(LS.LASTDONE, d); }
+
+    function updateStatsUI(){
+      $("streak").textContent = String(getStreak());
+      $("totalDone").textContent = String(getTotalDone());
+      $("todayDone").textContent = isDoneToday() ? "완료 ✅" : "아직";
+      $("moodBadge").textContent = `컨디션: ${getMood()==="light"?"가벼움":"깊게"}`;
+
+      const p=getPref();
+      const entries = Object.entries(p.catOpen||{}).sort((a,b)=>b[1]-a[1]).slice(0,3);
+      $("favCats").textContent = entries.length ? entries.map(([k])=>`${k}`).join(", ") : "-";
+    }
+
+    function awardDailyCompletion(){
+      const t = todayKey();
+      const days = getDoneDays();
+      if(!days[t]){
+        days[t]=true; setDoneDays(days);
+
+        const last = getLastDone();
+        const yesterday = (()=>{ const d=new Date(); d.setDate(d.getDate()-1);
+          return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+        })();
+
+        let s = getStreak();
+        s = (last === yesterday) ? (s + 1) : 1;
+        setStreak(s);
+        setLastDone(t);
+
+        setTotalDone(getTotalDone()+1);
+        updateStatsUI();
+      }
+    }
+
+    /* ===========================
+      2) CONTENT GENERATOR (업그레이드)
+      - 무제한 조합 생성
+      - 공손한 질문형
+      - 조사 자동 보정
+    =========================== */
+    const CATS = [
+      {name:"철학", emoji:"🧠", hint:"생각을 꺼내는 질문", premium:false},
+      {name:"운동", emoji:"🏃‍♂️", hint:"바로 실행하는 미션", premium:false},
+      {name:"역사·상식", emoji:"🏛️", hint:"5분 호기심", premium:false},
+      {name:"상상·SF", emoji:"👽", hint:"상상력 점화", premium:false},
+      {name:"언어", emoji:"🗣️", hint:"작게 배우기", premium:false},
+      {name:"문학", emoji:"📚", hint:"짧게 읽고 쓰기", premium:false},
+      {name:"심리", emoji:"🧩", hint:"내 마음 정리", premium:false},
+      {name:"토론", emoji:"🗯️", hint:"한쪽을 선택", premium:false},
+      {name:"글쓰기", emoji:"📝", hint:"짧게 기록", premium:false},
+      {name:"여행", emoji:"🧳", hint:"세상 한 조각", premium:false},
+
+      {name:"프리미엄·깊은 질문", emoji:"🌙", hint:"더 깊게", premium:true},
+      {name:"프리미엄·습관 설계", emoji:"🧠", hint:"시스템 만들기", premium:true},
+      {name:"프리미엄·관계/소통", emoji:"🤝", hint:"사람 이야기", premium:true},
+      {name:"프리미엄·커리어", emoji:"💼", hint:"방향 잡기", premium:true},
+      {name:"프리미엄·인생 계획", emoji:"🗺️", hint:"장기 설계", premium:true},
+    ];
+
+    const SEEDS = {
+      "철학": {
+        themes:["가치","선택","후회","두려움","정체성","성장","자유","책임","행복","의미"],
+        frames:[
+          "{A}{A_p} 기준으로 산다면, 오늘 {B}을/를 어떻게 바꾸실 건가요?",
+          "{A}{A_p} 가장 지키고 싶은 이유는 무엇인가요? 그리고 그 이유를 지키려면 {B}을/를 무엇부터 하실 건가요?",
+          "{A}{A_p} 피하게 되는 순간이 있다면, 그때 당신을 지키는 건 무엇이고 제한하는 건 무엇인가요?"
+        ]
+      },
+      "운동": {
+        themes:["10분 걷기","스트레칭","가벼운 근력","호흡","자세"],
+        frames:[
+          "오늘 {A}을/를 하신다면, 시작하기 가장 쉬운 ‘첫 30초’는 무엇으로 정하실 건가요?",
+          "{A}을/를 {B} 전에 딱 3분만 하신다면, 어떤 방식이 가장 현실적일까요?",
+          "운동이 어렵게 느껴진다면, ‘환경’에서 바꿀 수 있는 것 1가지는 무엇인가요?"
+        ]
+      },
+      "역사·상식": {
+        themes:["발명","지도","전쟁","무역","화폐","언어","도시","교육","과학"],
+        frames:[
+          "{A}{A_p} 한 가지를 5분만 찾아본다면, ‘가장 의외인 사실’ 1가지는 무엇일까요?",
+          "{A}{A_p} 원인 2개와 결과 1개를 고른다면, 무엇을 선택하시겠어요?",
+          "{A}{A_p} 지금의 우리 생활에 남긴 영향 1가지는 무엇인가요?"
+        ]
+      },
+      "상상·SF": {
+        themes:["불멸","시간여행","기억","AI","다중우주","감정","가상세계","외계 문명"],
+        frames:[
+          "{A}{A_p} 가능해진다면, 반드시 필요하다고 생각하는 규칙 3가지는 무엇일까요?",
+          "{A}{A_p} 단 하나만 질문할 수 있다면, 무엇을 묻고 싶나요?",
+          "{A}{A_p} 일상이 된다면, ‘좋은 변화’ 1개와 ‘위험’ 1개는 무엇일까요?"
+        ]
+      },
+      "언어": {
+        themes:["번역","뉘앙스","발음","단어","관용표현"],
+        frames:[
+          "‘{A}’을/를 다른 언어로 옮긴다면, 의미가 달라지는 부분은 무엇이라고 느끼실까요?",
+          "오늘 새로운 단어 1개를 고른다면, 어떤 단어가 지금 당신에게 가장 유용할까요?",
+          "같은 뜻인데 더 공손하게 말하고 싶다면, 어떤 표현으로 바꾸실 건가요?"
+        ]
+      },
+      "문학": {
+        themes:["비유","장면 묘사","독백","대사","서사","시적 이미지"],
+        frames:[
+          "오늘 본 장면 하나를 ‘{A}’ 느낌으로 바꿔 쓴다면, 어떤 한 문장을 먼저 쓰실 건가요?",
+          "지금 감정을 한 가지 비유로 표현한다면, 무엇에 비유하고 싶나요?",
+          "짧은 글(3문장)로 끝낸다면, 첫 문장은 어떻게 시작하고 싶으신가요?"
+        ]
+      },
+      "심리": {
+        themes:["불안","완벽주의","미루기","비교","자기비판","회복","집중"],
+        frames:[
+          "요즘 {A}{A_p} 올라올 때, 통제 가능한 것 1개와 통제 어려운 것 1개를 구분한다면 무엇일까요?",
+          "{A}{A_p} 나를 보호한 순간과 나를 방해한 순간이 있다면, 각각 어떤 모습이었나요?",
+          "내가 반복하는 패턴이 있다면, 그 패턴의 ‘이득’과 ‘손해’는 무엇인가요?"
+        ]
+      },
+      "토론": {
+        themes:["AI","학교 교육","SNS","환경 규제","게임","노동 시간","시험 제도","부의 불평등"],
+        frames:[
+          "주제: {A}. 찬성/반대 중 한쪽을 고르신다면, 가장 강한 근거 2개는 무엇일까요?",
+          "{A}{A_p} 사회에 도움이 되는 방식과 해가 되는 방식을 각각 2개씩 든다면 무엇인가요?",
+          "{A}{A_p} 규제한다면 얻는 것 1개, 잃는 것 1개는 무엇일까요?"
+        ]
+      },
+      "글쓰기": {
+        themes:["편지","일기","에세이","3문장 이야기","한 문단 소설","대사"],
+        frames:[
+          "미래의 나에게 {A} 형식으로 5문장만 쓴다면, 첫 문장은 무엇으로 시작하실 건가요?",
+          "오늘의 ‘작은 승리’ 1개를 {A}로 남긴다면, 제목은 무엇으로 붙이실 건가요?",
+          "딱 1문단으로 정리한다면, 핵심 문장 1개는 무엇으로 두실 건가요?"
+        ]
+      },
+      "여행": {
+        themes:["도시","자연","시장","박물관","골목","산책","바다","음식"],
+        frames:[
+          "지금 떠날 수 있다면 {A}{A_p} 가서 가장 먼저 하고 싶은 건 무엇인가요?",
+          "여행을 못 가도 가능해요. 오늘 주변을 ‘관광지’처럼 본다면, 발견 3가지는 무엇일까요?",
+          "{A}{A_p} 가는 여행이 ‘지금의 나’에게 필요한 이유 1가지는 무엇일까요?"
+        ]
+      },
+
+      // Premium: 좀 더 묵직한 톤
+      "프리미엄·깊은 질문": {
+        themes:["진짜 목표","두려움","정체성","관계","시간","후회","의미"],
+        frames:[
+          "{A}{A_p} 지금의 선택을 흔들고 있다면, 그 흔들림의 핵심은 무엇일까요?",
+          "당신에게 {A}{A_p} 가장 중요한 이유를 2문장으로 설명해 주실 수 있을까요?",
+          "{A}{A_p} 바뀐다면, 삶의 우선순위는 어떻게 달라질까요?"
+        ]
+      },
+      "프리미엄·습관 설계": {
+        themes:["공부","운동","독서","기록","집중","수면","정리","영어"],
+        frames:[
+          "{A}{A_p} 습관이 되려면, 시작 신호(트리거)는 무엇이 가장 적절할까요?",
+          "{A}{A_p} ‘아주 작게’ 만든다면, 2분 버전은 무엇이 될까요?",
+          "{A}{A_p} 실패하는 상황을 2개 예상하고, 대체 행동을 정하신다면 무엇일까요?"
+        ]
+      },
+      "프리미엄·관계/소통": {
+        themes:["고마움","미안함","경계","칭찬","경청","오해"],
+        frames:[
+          "{A}{A_p} 필요한 순간이 있다면, 지금 누구에게 어떤 한 문장을 전하고 싶으신가요?",
+          "{A}{A_p} 어려운 이유는 무엇인가요? 그리고 부담을 줄이려면 무엇을 바꾸면 좋을까요?",
+          "관계에서 반복되는 패턴이 있다면, 그 패턴을 바꿀 ‘미세 행동’ 1개는 무엇일까요?"
+        ]
+      },
+      "프리미엄·커리어": {
+        themes:["기획","코딩","디자인","영어","발표","마케팅","영상","데이터"],
+        frames:[
+          "{A}{A_p} 강점이 되려면, 다음 2주 동안 가장 작은 실천은 무엇이 좋을까요?",
+          "{A}{A_p} 피하고 싶은 환경이 있다면, 그 이유는 무엇인가요?",
+          "{A}{A_p} 실력 증명을 위해 만들 수 있는 ‘작은 결과물’ 1개는 무엇일까요?"
+        ]
+      },
+      "프리미엄·인생 계획": {
+        themes:["3년 뒤","루틴","가치","돈","관계","건강","목표"],
+        frames:[
+          "{A}{A_p} 선명해진다면, 지금의 하루에서 가장 먼저 바꾸고 싶은 건 무엇일까요?",
+          "{A}{A_p} 흔들릴 때마다 확인할 ‘한 문장 원칙’이 있다면 무엇일까요?",
+          "당신의 {A}{A_p} 방해하는 ‘가짜 목표’가 있다면 무엇이라고 생각하시나요?"
+        ]
+      },
+    };
+
+    function buildPrompt(cat, mood, seedStr){
+      const rng = seededRng(seedStr);
+      const S = SEEDS[cat] || SEEDS["철학"];
+      const A = pick(rng, S.themes);
+      const B = pick(rng, (SEEDS["심리"]?.themes||["루틴","생각","행동"]));
+      const frame = pick(rng, S.frames);
+
+      const A_p = particle(A, "이/가");
+
+      let text = frame
+        .replaceAll("{A}", A)
+        .replaceAll("{A_p}", A_p)
+        .replaceAll("{B}", B);
+
+      // 조사 보정 (간단 규칙)
+      text = text
+        .replaceAll("을/를", particle(A, "을/를"))
+        .replaceAll("이/가", particle(A, "이/가"))
+        .replaceAll("은/는", particle(A, "은/는"))
+        .replaceAll("과/와", particle(A, "과/와"));
+
+      if(mood==="deep"){
+        const tail = pick(rng, [
+          "가능하다면, 그 이유를 2문장으로 덧붙여 주실 수 있을까요?",
+          "그리고 그것을 오늘 ‘딱 하나’ 행동으로 옮긴다면 무엇이 될까요?",
+          "마지막으로, 반대 입장에서의 반론 1개도 함께 떠올려 주실 수 있을까요?"
+        ]);
+        text = tidyKorean(text) + " " + tail;
+      }
+
+      text = politeQuestion(text);
+      const id = `gen:${cat}:${mood}:${xmur3(seedStr)()}`;
+      return { id, cat, mood, text };
+    }
+
+    function generateNonRepeat(cat, mood, seedBase, maxTry=30){
+      const recent = new Set(getRecentIds());
+      for(let i=0;i<maxTry;i++){
+        const seed = `${seedBase}|${i}`;
+        const p = buildPrompt(cat, mood, seed);
+        if(!recent.has(p.id)){
+          const arr = [p.id, ...getRecentIds()];
+          setRecentIds(arr);
+          return p;
+        }
+      }
+      const p = buildPrompt(cat, mood, `${seedBase}|fallback`);
+      const arr = [p.id, ...getRecentIds()];
+      setRecentIds(arr);
+      return p;
+    }
+
+    /* ===========================
+      3) RECOMMENDATION (오늘의 추천)
+    =========================== */
+    const RARITIES = [
+      { key:"common", label:"일반", prob:0.78, dot:"#ffffff" },
+      { key:"rare", label:"희귀", prob:0.18, dot:"#6dd5ff" },
+      { key:"legendary", label:"전설", prob:0.04, dot:"#ffd07a" },
+    ];
+    function rollRarity(rng){
+      const r=rng();
+      let acc=0;
+      for(const x of RARITIES){
+        acc+=x.prob;
+        if(r<=acc) return x;
+      }
+      return RARITIES[0];
+    }
+
+    function weightedCats(){
+      const p=getPref();
+      const base = CATS.filter(c=>!c.premium).map(c=>c.name);
+      const weights = base.map(name=>{
+        const open = (p.catOpen[name]||0);
+        let likeBoost = 0;
+        for(const [qid, v] of Object.entries(p.like||{})){
+          if(v && qid.includes(`:${name}:`)) likeBoost += 1;
+        }
+        return { name, w: 1 + open*0.12 + likeBoost*0.06 };
+      });
+      return weights;
+    }
+    function pickWeighted(rng, items){
+      const sum = items.reduce((a,x)=>a+x.w,0);
+      let t = rng()*sum;
+      for(const it of items){
+        t -= it.w;
+        if(t<=0) return it.name;
+      }
+      return items[0].name;
+    }
+
+    function getTodayPicks(){
+      ensureDaily();
+      const stored = safeJSONGet(LS.PICKS, null);
+      if(stored && stored.day === todayKey() && Array.isArray(stored.items)) return stored.items;
+
+      const p=getPref();
+      const mood = p.mood || "light";
+      const rng = seededRng(`picks|${todayKey()}|${JSON.stringify(p.catOpen||{})}`);
+      const weights = weightedCats();
+
+      const items=[];
+      const usedCats=new Set();
+      for(let i=0;i<3;i++){
+        let cat = pickWeighted(rng, weights);
+        let guard=0;
+        while(usedCats.has(cat) && guard++<10){
+          cat = pickWeighted(rng, weights);
+        }
+        usedCats.add(cat);
+
+        const rarity = rollRarity(rng);
+        const prompt = generateNonRepeat(cat, mood, `pick|${todayKey()}|${cat}|${i}`);
+        items.push({
+          ...prompt,
+          emoji: (CATS.find(x=>x.name===cat)?.emoji)||"✨",
+          rarity: rarity.key,
+          rarityLabel: rarity.label
+        });
+      }
+
+      safeJSONSet(LS.PICKS, { day: todayKey(), items });
+      return items;
+    }
+
+    function renderPicks(){
+      const box = $("picks");
+      box.innerHTML = "";
+      const items = getTodayPicks();
+      items.forEach((p)=>{
+        const div=document.createElement("div");
+        div.className="pick";
+        div.innerHTML = `
+          <div class="meta">
+            <span class="badge">${p.emoji} ${p.cat}</span>
+            <span class="badge">${p.mood==="deep"?"깊게":"가볍게"} · ${p.rarityLabel}</span>
+          </div>
+          <div class="q">${p.text}</div>
+          <div class="sub">터치하면 바로 열 수 있어요</div>
+        `;
+        div.onclick = ()=> openSceneByPrompt(p);
+        box.appendChild(div);
+      });
+    }
+
+    /* ===========================
+      4) UI RENDER: categories
+    =========================== */
+    function renderCats(){
+      const grid = $("grid");
+      grid.innerHTML = "";
+      CATS.forEach(c=>{
+        const div=document.createElement("div");
+        div.className="cat";
+        div.innerHTML = `
+          <div class="emoji">${c.emoji}</div>
+          <div>
+            <div class="name">${c.name}${c.premium ? " · 프리미엄" : ""}</div>
+            <div class="hint">${c.hint}</div>
+          </div>
+        `;
+        div.onclick = ()=> openScene(c);
+        grid.appendChild(div);
+      });
+    }
+
+    /* ===========================
+      5) SCENE + OPEN FLOW
+    =========================== */
+    const state = {
+      opening:false,
+      soundOn:true,
+      activeCat:null,
+      activeRarity: RARITIES[0],
+      currentPrompt: null,
+      currentFromPick: false,
+    };
+
+    function doFlash(){
+      const flash = $("flash");
+      flash.classList.remove("on");
+      void flash.offsetWidth;
+      flash.classList.add("on");
+    }
+
+    function setRarityUI(r){
+      $("rarityText").textContent = r.label;
+      $("rarityDot").style.background = r.dot;
+    }
+
+    function runProgress(ms){
+      const prog=$("prog"), bar=$("progBar");
+      prog.style.display="block";
+      bar.style.width="0%";
+      const start=performance.now();
+      const tick=()=>{
+        const t=performance.now()-start;
+        const p=Math.min(1,t/ms);
+        bar.style.width=(p*100).toFixed(1)+"%";
+        if(p<1) requestAnimationFrame(tick);
+      };
+      requestAnimationFrame(tick);
+    }
+
+    function openScene(catObj){
+      state.activeCat = catObj.name;
+      state.currentFromPick = false;
+      bumpCat(state.activeCat);
+
+      $("sceneTitle").textContent = `${catObj.emoji} ${catObj.name} 상자`;
+      $("sceneMini").textContent = "상자를 클릭해 열어보세요.";
+      $("prog").style.display = "none";
+      $("progBar").style.width = "0%";
+
+      const mood = getMood();
+      state.currentPrompt = generateNonRepeat(state.activeCat, mood, `preview|${todayKey()}|${state.activeCat}|${Date.now()}`);
+
+      const rng = seededRng(`rar|${todayKey()}|${state.activeCat}|${Date.now()}`);
+      state.activeRarity = rollRarity(rng);
+      setRarityUI(state.activeRarity);
+
+      if(getSettings().enable3D && window.__threeReady){
+        $("fallbackBox").style.display = "none";
+        $("tapHint").textContent = "클릭해서 열기";
+      }else{
+        $("fallbackBox").style.display = "flex";
+        $("tapHint").textContent = getSettings().enable3D ? "클릭해서 열기 (3D 로딩 중)" : "클릭해서 열기";
+      }
+
+      $("scene").style.display="flex";
+      if(window.__threeApi) window.__threeApi.reset(state.activeRarity.key);
+    }
+
+    function openSceneByPrompt(p){
+      state.activeCat = p.cat;
+      state.currentFromPick = true;
+      bumpCat(state.activeCat);
+
+      const emoji = (CATS.find(x=>x.name===p.cat)?.emoji) || "✨";
+      $("sceneTitle").textContent = `${emoji} ${p.cat} 상자`;
+      $("sceneMini").textContent = "상자를 클릭해 열어보세요.";
+      $("prog").style.display = "none";
+      $("progBar").style.width = "0%";
+
+      state.currentPrompt = { id:p.id, cat:p.cat, mood:p.mood, text:p.text };
+
+      const r = RARITIES.find(x=>x.key===p.rarity) || RARITIES[0];
+      state.activeRarity = r;
+      setRarityUI(r);
+
+      $("scene").style.display="flex";
+      if(window.__threeApi) window.__threeApi.reset(state.activeRarity.key);
+    }
+
+    function closeScene(){
+      $("scene").style.display="none";
+      state.opening=false;
+    }
+
+    function typeText(el, text, speed=20){
+      el.textContent = "";
+      let i=0;
+      const timer=setInterval(()=>{
+        el.textContent += text[i++] || "";
+        if(i>=text.length) clearInterval(timer);
+      }, speed);
+    }
+
+    function openQuestionScreen(prompt){
+      $("doneCheck").checked = false;
+      $("qMeta").textContent = `오늘의 카테고리: ${prompt.cat} · ${prompt.mood==="deep"?"깊게":"가볍게"} · ${state.activeRarity.label}`;
+      $("qs").style.display="block";
+      typeText($("qText"), prompt.text, 18);
+
+      const pref = getPref();
+      const liked = !!pref.like[prompt.id];
+      const disliked = !!pref.dislike[prompt.id];
+      $("likeBtn").style.opacity = liked ? "1" : ".9";
+      $("dislikeBtn").style.opacity = disliked ? "1" : ".9";
+      $("likeBtn").style.borderColor = liked ? "rgba(255,255,255,.28)" : "rgba(255,255,255,.14)";
+      $("dislikeBtn").style.borderColor = disliked ? "rgba(255,255,255,.28)" : "rgba(255,255,255,.14)";
+
+      pushHist({
+        id: prompt.id,
+        cat: prompt.cat,
+        mood: prompt.mood,
+        rarity: state.activeRarity.key,
+        question: prompt.text,
+        at: nowISO(),
+        like: liked ? 1 : (disliked ? -1 : 0)
+      });
+    }
+    function closeQuestionScreen(){ $("qs").style.display="none"; }
+
+    function rerollPrompt(){
+      if(!state.activeCat) return;
+      const mood = getMood();
+      state.currentPrompt = generateNonRepeat(state.activeCat, mood, `reroll|${todayKey()}|${state.activeCat}|${Date.now()}`);
+      showToast("🎲 새 질문을 준비했어요. (열면 기록됩니다)");
+      $("sceneMini").textContent = "새 질문을 준비했어요. 상자를 클릭해 열어보세요.";
+    }
+
+    function previewPrompt(){
+      if(!state.currentPrompt) return;
+      showToast(`👀 미리보기: ${state.currentPrompt.text}`);
+    }
+
+    /* ===========================
+      6) LIKE / DISLIKE + PERSONALIZATION
+    =========================== */
+    function setLikeState(promptId, v){
+      const p=getPref();
+      if(v===1){
+        p.like[promptId]=true;
+        delete p.dislike[promptId];
+      }else if(v===-1){
+        p.dislike[promptId]=true;
+        delete p.like[promptId];
+      }else{
+        delete p.like[promptId];
+        delete p.dislike[promptId];
+      }
+      setPref(p);
+    }
+
+    function updateLastHistReaction(promptId){
+      const arr = getHist();
+      const idx = arr.findIndex(x=>x.id===promptId);
+      if(idx>=0){
+        const p=getPref();
+        arr[idx].like = p.like[promptId] ? 1 : (p.dislike[promptId] ? -1 : 0);
+        safeJSONSet(LS.HIST, arr);
+      }
+    }
+
+    /* ===========================
+      7) MODALS: History / Calendar / Settings
+    =========================== */
+    function openModal(title, htmlOrNodeBuilder){
+      $("modalTitle").textContent = title;
+      const body = $("modalBody");
+      body.innerHTML = "";
+      if(typeof htmlOrNodeBuilder === "string"){
+        body.innerHTML = htmlOrNodeBuilder;
+      }else{
+        htmlOrNodeBuilder(body);
+      }
+      $("modal").style.display="flex";
+    }
+    function closeModal(){ $("modal").style.display="none"; }
+
+    function renderHistoryModal(){
+      openModal("📚 기록", (body)=>{
+        const arr=getHist();
+        if(arr.length===0){
+          const div=document.createElement("div");
+          div.className="item";
+          div.innerHTML = `<div class="meta">오늘은 아직 기록이 없어요.</div>`;
+          body.appendChild(div);
+          return;
+        }
+        arr.slice(0,60).forEach((x)=>{
+          const div=document.createElement("div");
+          div.className="item";
+          const t=new Date(x.at);
+          const likeTag = x.like===1 ? "👍" : (x.like===-1 ? "👎" : "");
+          const rarityLabel = (x.rarity==="legendary")?"전설":(x.rarity==="rare")?"희귀":"일반";
+          div.innerHTML = `
+            <div class="meta">
+              <span>${t.toLocaleString()} · [${x.cat}] · ${x.mood==="deep"?"깊게":"가볍게"} · ${rarityLabel}</span>
+              <span>${likeTag}</span>
+            </div>
+            <div class="q">${x.question}</div>
+            <div class="tagline">
+              <span class="tiny">ID: ${x.id.slice(0,18)}…</span>
+              <button class="btn" data-reopen="${x.id}">다시 열기</button>
+            </div>
+          `;
+          body.appendChild(div);
+
+          const btn=div.querySelector("button[data-reopen]");
+          btn.onclick = ()=>{
+            state.activeRarity = (x.rarity==="legendary")?RARITIES[2]:(x.rarity==="rare")?RARITIES[1]:RARITIES[0];
+            setRarityUI(state.activeRarity);
+            closeModal();
+            openQuestionScreen({ id:x.id, cat:x.cat, mood:x.mood, text:x.question });
+          };
+        });
+      });
+    }
+
+    function renderCalendarModal(){
+      openModal("🗓️ 최근 30일 캘린더", (body)=>{
+        const days=getDoneDays();
+        const wrap=document.createElement("div");
+        wrap.className="item";
+        wrap.innerHTML = `
+          <div class="meta">완료한 날은 더 밝게 표시돼요. (하루 1회 이상 완료 시)</div>
+          <div class="cal" id="calGrid"></div>
+        `;
+        body.appendChild(wrap);
+
+        const g = wrap.querySelector("#calGrid");
+        const d = new Date();
+        for(let i=29;i>=0;i--){
+          const x = new Date(d);
+          x.setDate(x.getDate()-i);
+          const key=`${x.getFullYear()}-${String(x.getMonth()+1).padStart(2,"0")}-${String(x.getDate()).padStart(2,"0")}`;
+          const cell=document.createElement("div");
+          cell.className="day" + (days[key] ? " done" : "");
+          cell.title = key + (days[key] ? " (완료)" : "");
+          cell.textContent = String(x.getDate());
+          g.appendChild(cell);
+        }
+      });
+    }
+
+    function getSettings(){
+      return safeJSONGet(LS.SETTINGS, { enable3D:true, lite:false });
+    }
+    function setSettings(s){ safeJSONSet(LS.SETTINGS, s); }
+    function renderSettingsModal(){
+      const s=getSettings();
+      openModal("⚙️ 설정", (body)=>{
+        const box=document.createElement("div");
+        box.className="item";
+        box.innerHTML = `
+          <div class="meta">기기 성능에 따라 3D를 끄거나 Lite 모드를 켤 수 있어요.</div>
+          <div class="tagline">
+            <button class="btn" id="toggle3d">3D: ${s.enable3D?"ON":"OFF"}</button>
+            <button class="btn" id="toggleLite">Lite: ${s.lite?"ON":"OFF"}</button>
+            <button class="btn" id="resetData">데이터 초기화</button>
+          </div>
+          <div class="meta" style="margin-top:10px;">
+            * Lite 모드는 파티클 수를 줄여 발열/배터리를 줄여요.<br/>
+            * 데이터 초기화는 되돌릴 수 없어요.
+          </div>
+        `;
+        body.appendChild(box);
+
+        box.querySelector("#toggle3d").onclick = ()=>{
+          const ns=getSettings();
+          ns.enable3D=!ns.enable3D;
+          setSettings(ns);
+          showToast(`3D ${ns.enable3D?"ON":"OFF"}`);
+          closeModal();
+          renderSettingsModal();
+        };
+        box.querySelector("#toggleLite").onclick = ()=>{
+          const ns=getSettings();
+          ns.lite=!ns.lite;
+          setSettings(ns);
+          showToast(`Lite ${ns.lite?"ON":"OFF"}`);
+          if(window.__threeApi) window.__threeApi.setLite(ns.lite);
+          closeModal();
+          renderSettingsModal();
+        };
+        box.querySelector("#resetData").onclick = ()=>{
+          const ok = confirm("정말 초기화할까요? (기록/스트릭/선호/키 포함)");
+          if(!ok) return;
+          Object.values(LS).forEach(k=> localStorage.removeItem(k));
+          showToast("초기화 완료");
+          location.reload();
+        };
+      });
+    }
+
+    /* ===========================
+      8) SOUND (simple synth)
+    =========================== */
+    const sfx = (() => {
+      let ctx=null;
+      function ac(){
+        if(!state.soundOn) return null;
+        ctx = ctx || new (window.AudioContext||window.webkitAudioContext)();
+        return ctx;
+      }
+      function tone(freq=440, dur=0.08, type="sine", gain=0.08){
+        const c=ac(); if(!c) return;
+        const o=c.createOscillator();
+        const g=c.createGain();
+        o.type=type; o.frequency.value=freq;
+        g.gain.value=gain;
+        o.connect(g); g.connect(c.destination);
+        o.start();
+        g.gain.exponentialRampToValueAtTime(0.0001, c.currentTime+dur);
+        o.stop(c.currentTime+dur);
+      }
+      return {
+        click(){ tone(520,0.05,"triangle",0.07); },
+        insert(){ tone(520,0.06,"triangle",0.08); tone(740,0.06,"triangle",0.06); },
+        open(){ tone(170,0.10,"sawtooth",0.08); tone(420,0.12,"triangle",0.06); },
+        rare(){ tone(660,0.06,"sine",0.08); tone(990,0.08,"sine",0.06); },
+        legendary(){ tone(660,0.08,"sine",0.08); tone(990,0.10,"sine",0.07); tone(1320,0.12,"sine",0.05); },
+        reveal(){ tone(880,0.12,"sine",0.08); },
+        fail(){ tone(140,0.10,"square",0.06); },
+      };
+    })();
+
+    /* ===========================
+      9) OPEN FLOW
+    =========================== */
+    function openFlow(){
+      if(state.opening) return;
+
+      if(left()<=0){
+        sfx.fail?.();
+        showToast("열쇠가 없어요. (광고로 +1 가능)");
+        return;
+      }
+      state.opening = true;
+      useKey();
+      renderKeys();
+
+      const rng = seededRng(`open|${todayKey()}|${state.activeCat}|${Date.now()}|${Math.random()}`);
+      state.activeRarity = rollRarity(rng);
+      setRarityUI(state.activeRarity);
+
+      if(state.activeRarity.key==="rare") sfx.rare?.();
+      else if(state.activeRarity.key==="legendary") sfx.legendary?.();
+      else sfx.insert?.();
+
+      $("sceneMini").textContent = "열쇠를 사용하는 중…";
+      runProgress(2900);
+
+      const settings = getSettings();
+      const can3D = settings.enable3D && window.__threeApi && window.__threeReady;
+
+      if(can3D){
+        window.__threeApi.reset(state.activeRarity.key);
+        window.__threeApi.playOpen(state.activeRarity.key);
+      }else{
+        doFlash();
+        sfx.open?.();
+      }
+
+      setTimeout(()=>{
+        let prompt = state.currentPrompt;
+        if(!prompt || !state.currentFromPick){
+          const mood = getMood();
+          prompt = generateNonRepeat(state.activeCat, mood, `openq|${todayKey()}|${state.activeCat}|${Date.now()}`);
+          state.currentPrompt = prompt;
+        }
+
+        closeScene();
+        sfx.reveal?.();
+        setTimeout(()=> openQuestionScreen(prompt), 120);
+        state.opening = false;
+      }, 2900);
+    }
+
+    /* ===========================
+      10) SHARE CARD (Canvas -> Image)
+    =========================== */
+    async function shareCard(prompt){
+      const W=1080, H=1920;
+      const c=document.createElement("canvas");
+      c.width=W; c.height=H;
+      const g=c.getContext("2d");
+
+      const grad=g.createLinearGradient(0,0,0,H);
+      grad.addColorStop(0,"#070913");
+      grad.addColorStop(1,"#0d1020");
+      g.fillStyle=grad; g.fillRect(0,0,W,H);
+
+      function blob(x,y,r,rgba){
+        const rg=g.createRadialGradient(x,y,0,x,y,r);
+        rg.addColorStop(0,rgba);
+        rg.addColorStop(1,"rgba(0,0,0,0)");
+        g.fillStyle=rg; g.beginPath(); g.arc(x,y,r,0,Math.PI*2); g.fill();
+      }
+      blob(W*0.2,H*0.2,520,"rgba(109,213,255,.18)");
+      blob(W*0.82,H*0.12,560,"rgba(155,123,255,.16)");
+      blob(W*0.78,H*0.82,620,"rgba(255,208,122,.10)");
+
+      const pad=84;
+      const cardX=pad, cardY=pad*1.3, cardW=W-pad*2, cardH=H-pad*2.1;
+      g.fillStyle="rgba(255,255,255,0.06)";
+      roundRect(g, cardX, cardY, cardW, cardH, 48); g.fill();
+      g.strokeStyle="rgba(255,255,255,0.14)";
+      g.lineWidth=3;
+      roundRect(g, cardX, cardY, cardW, cardH, 48); g.stroke();
+
+      g.fillStyle="rgba(255,255,255,0.92)";
+      g.font="800 56px system-ui, -apple-system, Segoe UI, Roboto, Apple SD Gothic Neo";
+      g.fillText("오늘의 새로움", cardX+56, cardY+96);
+
+      g.fillStyle="rgba(255,255,255,0.72)";
+      g.font="600 32px system-ui, -apple-system, Segoe UI, Roboto, Apple SD Gothic Neo";
+      g.fillText(`${prompt.cat} · ${prompt.mood==="deep"?"깊게":"가볍게"} · ${state.activeRarity.label}`, cardX+56, cardY+150);
+
+      g.fillStyle="#fff";
+      g.font="900 60px system-ui, -apple-system, Segoe UI, Roboto, Apple SD Gothic Neo";
+      wrapText(g, prompt.text, cardX+56, cardY+260, cardW-112, 76, 10);
+
+      g.fillStyle="rgba(255,255,255,0.70)";
+      g.font="650 30px system-ui, -apple-system, Segoe UI, Roboto, Apple SD Gothic Neo";
+      g.fillText(todayKey(), cardX+56, cardY+cardH-90);
+
+      g.fillStyle="rgba(255,255,255,0.60)";
+      g.font="650 28px system-ui, -apple-system, Segoe UI, Roboto, Apple SD Gothic Neo";
+      g.fillText("작게라도, 매일 한 번이면 충분해요.", cardX+56, cardY+cardH-48);
+
+      const blobUrl = await new Promise((resolve)=> c.toBlob(b=>resolve(URL.createObjectURL(b)), "image/png", 1.0));
+
+      try{
+        if(navigator.canShare){
+          const res = await fetch(blobUrl);
+          const file = new File([await res.blob()], "today-novelty.png", { type:"image/png" });
+          if(navigator.canShare({ files:[file] })){
+            await navigator.share({ files:[file], title:"오늘의 새로움", text: "오늘의 질문/미션" });
+            URL.revokeObjectURL(blobUrl);
+            return;
+          }
+        }
+      }catch(e){}
+
+      const a=document.createElement("a");
+      a.href=blobUrl;
+      a.download="today-novelty.png";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(()=>URL.revokeObjectURL(blobUrl), 2000);
+    }
+
+    function roundRect(ctx, x, y, w, h, r){
+      const rr = Math.min(r, w/2, h/2);
+      ctx.beginPath();
+      ctx.moveTo(x+rr, y);
+      ctx.arcTo(x+w, y, x+w, y+h, rr);
+      ctx.arcTo(x+w, y+h, x, y+h, rr);
+      ctx.arcTo(x, y+h, x, y, rr);
+      ctx.arcTo(x, y, x+w, y, rr);
+      ctx.closePath();
+    }
+    function wrapText(ctx, text, x, y, maxWidth, lineHeight, maxLines){
+      // 한국어는 공백이 적을 수 있어 “문장 단위”로 분리 보조
+      const parts = text.split(" ");
+      let line="", lines=0;
+      for(let i=0;i<parts.length;i++){
+        const test = line + parts[i] + " ";
+        if(ctx.measureText(test).width > maxWidth && i>0){
+          ctx.fillText(line.trim(), x, y + lines*lineHeight);
+          line = parts[i] + " ";
+          lines++;
+          if(lines>=maxLines-1) break;
+        }else line = test;
+      }
+      if(lines < maxLines) ctx.fillText(line.trim(), x, y + lines*lineHeight);
+    }
+
+    /* ===========================
+      11) EVENTS + INIT
+    =========================== */
+    function init(){
+      ensureDaily();
+
+      state.soundOn = (localStorage.getItem(LS.SOUND) ?? "1") === "1";
+      $("soundBtn").textContent = state.soundOn ? "🔊 사운드 ON" : "🔇 사운드 OFF";
+
+      setMood(getMood());
+
+      renderCats();
+      renderKeys();
+      renderPicks();
+      updateStatsUI();
+
+      if(window.__threeApi) window.__threeApi.setLite(getSettings().lite);
+    }
+
+    $("soundBtn").onclick = ()=>{
+      state.soundOn = !state.soundOn;
+      localStorage.setItem(LS.SOUND, state.soundOn ? "1" : "0");
+      $("soundBtn").textContent = state.soundOn ? "🔊 사운드 ON" : "🔇 사운드 OFF";
+      showToast(state.soundOn ? "사운드 ON" : "사운드 OFF");
+    };
+
+    $("historyBtn").onclick = ()=> renderHistoryModal();
+    $("settingsBtn").onclick = ()=> renderSettingsModal();
+
+    $("modalBg").onclick = closeModal;
+    $("modalClose").onclick = closeModal;
+
+    $("openCalendar").onclick = ()=> renderCalendarModal();
+
+    $("toggleMood").onclick = ()=>{
+      const m = getMood()==="light" ? "deep" : "light";
+      setMood(m);
+      renderPicks();
+      showToast(`컨디션을 "${m==="light"?"가벼움":"깊게"}"로 바꿨어요`);
+    };
+
+    $("regenPicks").onclick = ()=>{
+      localStorage.removeItem(LS.PICKS);
+      renderPicks();
+      showToast("오늘의 추천을 새로 골랐어요");
+    };
+
+    $("quickOpen").onclick = ()=>{
+      const items = getTodayPicks();
+      if(!items.length) return;
+      openSceneByPrompt(items[0]);
+    };
+
+    $("sceneClose").onclick = closeScene;
+    $("box3d").onclick = ()=>{
+      sfx.click?.();
+      if(!$("scene").style.display || $("scene").style.display!=="flex") return;
+      openFlow();
+    };
+
+    $("rerollBtn").onclick = rerollPrompt;
+    $("previewBtn").onclick = previewPrompt;
+
+    $("adBtn").onclick = ()=>{
+      alert("🎬 (데모 광고)\n\n안녕하세요, 이윤성입니다.\n사람들이 ‘생각 없이도 하루에 한 번은 성장하게’ 만드는 앱을 만들고 있어요.\n지금은 테스트 중입니다.");
+      addKey(1);
+      renderKeys();
+      showToast("열쇠 +1 지급!");
+    };
+    $("subBtn").onclick = ()=>{
+      alert("🌙 (데모)\n결제는 아직 연결 전이에요.\n지금은 UI/흐름만 테스트 중입니다.");
+    };
+
+    $("backBtn").onclick = closeQuestionScreen;
+
+    $("likeBtn").onclick = ()=>{
+      const p=state.currentPrompt;
+      if(!p) return;
+      setLikeState(p.id, 1);
+      updateLastHistReaction(p.id);
+      showToast("👍 좋아요! 추천이 더 정확해져요");
+      renderPicks();
+    };
+    $("dislikeBtn").onclick = ()=>{
+      const p=state.currentPrompt;
+      if(!p) return;
+      setLikeState(p.id, -1);
+      updateLastHistReaction(p.id);
+      showToast("👎 반영했어요. 다음엔 더 맞춰볼게요");
+      renderPicks();
+    };
+    $("shareBtn").onclick = async ()=>{
+      const p=state.currentPrompt;
+      if(!p) return;
+      showToast("공유 카드를 만들고 있어요…");
+      await shareCard(p);
+      showToast("공유 카드 준비 완료!");
+    };
+
+    $("finishBtn").onclick = ()=>{
+      if(!$("doneCheck").checked){
+        showToast("완료 체크를 먼저 해주세요 🙂");
+        return;
+      }
+      awardDailyCompletion();
+      showToast("잘하셨어요. 오늘의 새로움이 쌓이고 있어요.");
+      closeQuestionScreen();
+      renderPicks();
+    };
+
+    init();
+  </script>
+
+  <script>
+    /* ==============================
+       THREE.JS ENGINE (고급 상자 업그레이드)
+       - clearcoat / physical material
+       - brushed metal (procedural)
+       - panel seams / rivets / layered lock
+    ============================== */
+    (function startThreeWhenReady(){
+      const canvas = document.getElementById("gl");
+      const fallbackBox = document.getElementById("fallbackBox");
+      const box3d = document.getElementById("box3d");
+
+      function fail3D(){
+        window.__threeReady = false;
+        fallbackBox.style.display = "flex";
+      }
+
+      let tries=0;
+      const timer=setInterval(()=>{
+        tries++;
+        if(window.THREE){
+          clearInterval(timer);
+          boot3D(window.THREE);
+          return;
+        }
+        if(tries>=30){
+          clearInterval(timer);
+          fail3D();
+        }
+      },100);
+
+      function boot3D(THREE){
+        window.__threeReady = true;
+        fallbackBox.style.display = "none";
+
+        const renderer = new THREE.WebGLRenderer({ canvas, antialias:true, alpha:true, powerPreference:"high-performance" });
+        renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+        try { renderer.outputColorSpace = THREE.SRGBColorSpace; } catch(e) {}
+
+        const scene3 = new THREE.Scene();
+        scene3.fog = new THREE.FogExp2(0x000000, 0.35);
+
+        const camera = new THREE.PerspectiveCamera(38, 1, 0.01, 60);
+        camera.position.set(0, 0.18, 2.65);
+
+        const stage = new THREE.Group();
+        scene3.add(stage);
+
+        const keyLight = new THREE.DirectionalLight(0xffffff, 1.35);
+        keyLight.position.set(1.2, 1.3, 1.0);
+        stage.add(keyLight);
+
+        const fillLight = new THREE.DirectionalLight(0x9bd7ff, 0.75);
+        fillLight.position.set(-1.4, 0.6, 0.8);
+        stage.add(fillLight);
+
+        const rimLight = new THREE.DirectionalLight(0xffd07a, 0.65);
+        rimLight.position.set(0.0, 0.9, -1.6);
+        stage.add(rimLight);
+
+        const ambient = new THREE.AmbientLight(0x7a7aff, 0.18);
+        stage.add(ambient);
+
+        const ground = new THREE.Mesh(
+          new THREE.CircleGeometry(1.15, 64),
+          new THREE.MeshBasicMaterial({ color: 0x8ccfff, transparent:true, opacity:0.11 })
+        );
+        ground.rotation.x = -Math.PI/2;
+        ground.position.y = -0.62;
+        stage.add(ground);
+
+        const lerp = (a,b,t)=>a+(b-a)*t;
+        const easeOutCubic = t => 1 - Math.pow(1-t, 3);
+        const easeInOutCubic = t => (t<0.5)?4*t*t*t:1-Math.pow(-2*t+2,3)/2;
+        const clamp = (v,a,b)=>Math.min(b,Math.max(a,v));
+
+        function makeBrushedTexture(){
+          const c = document.createElement("canvas");
+          c.width = 256; c.height = 256;
+          const g = c.getContext("2d");
+          g.fillStyle = "#808080";
+          g.fillRect(0,0,256,256);
+          for(let y=0;y<256;y++){
+            const v = 110 + Math.random()*70;
+            g.fillStyle = `rgb(${v},${v},${v})`;
+            g.fillRect(0,y,256,1);
+            if(Math.random()<0.12){
+              g.globalAlpha = 0.25;
+              g.fillStyle = "#ffffff";
+              g.fillRect(0,y,256,1);
+              g.globalAlpha = 1;
+            }
+          }
+          const tex = new THREE.CanvasTexture(c);
+          tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+          tex.repeat.set(1,1);
+          tex.anisotropy = 8;
+          return tex;
+        }
+        const brushedTex = makeBrushedTexture();
+
+        function makeMat(baseColor, metal=0.78, rough=0.22, clear=0.9, clearR=0.18){
+          return new THREE.MeshPhysicalMaterial({
+            color: baseColor,
+            metalness: metal,
+            roughness: rough,
+            clearcoat: clear,
+            clearcoatRoughness: clearR,
+            sheen: 0.15,
+            sheenRoughness: 0.6,
+          });
+        }
+
+        const bodyMatA = makeMat(new THREE.Color("#2f66ff"), 0.70, 0.24, 0.95, 0.14);
+        const bodyMatB = makeMat(new THREE.Color("#20308e"), 0.75, 0.28, 0.92, 0.16);
+
+        const trimMat  = makeMat(new THREE.Color("#f1d7a2"), 1.00, 0.20, 1.0, 0.10);
+        trimMat.map = brushedTex; trimMat.needsUpdate = true;
+
+        const lockMat  = makeMat(new THREE.Color("#ffcf7a"), 1.00, 0.16, 1.0, 0.08);
+        lockMat.map = brushedTex; lockMat.needsUpdate = true;
+
+        function roundedBox(w,h,d,r,seg=10){
+          // 외부 라이브러리 없이: 세그먼트 많은 박스 + 패널/프레임으로 “라운드 느낌” 강화
+          return new THREE.BoxGeometry(w,h,d, seg,seg,seg);
+        }
+
+        const chest = new THREE.Group();
+        stage.add(chest);
+        chest.position.set(0, -0.15, 0);
+        chest.rotation.set(0.22, -0.35, 0);
+
+        // ===== Chest body (premium panel build) =====
+        const bodyGeo = roundedBox(1.26, 0.74, 0.94, 0.10, 10);
+        const body = new THREE.Mesh(bodyGeo, bodyMatA);
+        body.position.set(0, -0.02, 0);
+        chest.add(body);
+
+        const shellMat = makeMat(new THREE.Color("#0f122a"), 0.2, 0.85, 0.0, 0.0);
+        shellMat.transparent = true; shellMat.opacity = 0.32;
+        const shell = new THREE.Mesh(new THREE.BoxGeometry(1.30,0.78,0.98), shellMat);
+        shell.position.copy(body.position);
+        chest.add(shell);
+
+        const seamMat = makeMat(new THREE.Color("#0b0d18"), 0.15, 0.9, 0.0, 0.0);
+        seamMat.transparent = true; seamMat.opacity = 0.55;
+
+        function frame(w,h,d,mat){
+          const g = new THREE.BoxGeometry(w,h,d);
+          return new THREE.Mesh(g, mat);
+        }
+
+        const frontFrame = frame(1.18,0.56,0.02,seamMat);
+        frontFrame.position.set(0,-0.04,0.48);
+        chest.add(frontFrame);
+
+        const leftFrame = frame(0.02,0.56,0.86,seamMat);
+        leftFrame.position.set(-0.60,-0.04,0.02);
+        chest.add(leftFrame);
+
+        const rightFrame = leftFrame.clone();
+        rightFrame.position.x = 0.60;
+        chest.add(rightFrame);
+
+        function bandRing(y){
+          const m = new THREE.Mesh(new THREE.TorusGeometry(0.64, 0.05, 16, 96), trimMat);
+          m.rotation.x = Math.PI/2;
+          m.scale.z = 0.74;
+          m.position.set(0, y, 0.0);
+          return m;
+        }
+        chest.add(bandRing(-0.20));
+        chest.add(bandRing(0.06));
+
+        const lid = new THREE.Group();
+        lid.position.set(0, 0.34, 0.0);
+        chest.add(lid);
+
+        const hinge = new THREE.Group();
+        hinge.position.set(0, 0.02, -0.47);
+        lid.add(hinge);
+
+        const lidMesh = new THREE.Mesh(roundedBox(1.25, 0.46, 0.92, 0.10, 10), bodyMatB);
+        lidMesh.position.set(0, 0.16, 0.47);
+        hinge.add(lidMesh);
+
+        const lidSeam = new THREE.Mesh(new THREE.BoxGeometry(1.16,0.30,0.02), seamMat);
+        lidSeam.position.set(0,0.10,0.93);
+        hinge.add(lidSeam);
+
+        const lockBase = new THREE.Mesh(new THREE.BoxGeometry(0.44,0.34,0.12), lockMat);
+        lockBase.position.set(0,-0.01,0.48);
+        chest.add(lockBase);
+
+        const lockInsetMat = makeMat(new THREE.Color("#2b1b07"), 0.25, 0.8, 0.0, 0.0);
+        lockInsetMat.transparent=true; lockInsetMat.opacity=0.55;
+        const lockInset = new THREE.Mesh(new THREE.BoxGeometry(0.34,0.24,0.08), lockInsetMat);
+        lockInset.position.set(0,-0.02,0.535);
+        chest.add(lockInset);
+
+        const keyHole = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.060, 0.060, 0.07, 36),
+          makeMat(new THREE.Color("#07070c"), 0.1, 0.9, 0.0, 0.0)
+        );
+        keyHole.rotation.x = Math.PI/2;
+        keyHole.position.set(0, -0.03, 0.565);
+        chest.add(keyHole);
+
+        const rivetMat = makeMat(new THREE.Color("#ffe2a6"), 1.0, 0.25, 1.0, 0.12);
+        function rivet(x,y,z){
+          const r = new THREE.Mesh(new THREE.SphereGeometry(0.018, 16, 16), rivetMat);
+          r.position.set(x,y,z);
+          chest.add(r);
+        }
+        [-0.16,0.16].forEach(x=>{ rivet(x,0.09,0.48); rivet(x,-0.18,0.48); });
+
+        const coreMat = new THREE.MeshPhysicalMaterial({
+          color: new THREE.Color("#ffffff"),
+          emissive: new THREE.Color("#ffffff"),
+          emissiveIntensity: 0.0,
+          roughness: 0.0,
+          metalness: 0.0,
+          transparent:true,
+          opacity:0.0
+        });
+        const core = new THREE.Mesh(new THREE.SphereGeometry(0.18, 40, 40), coreMat);
+        core.position.set(0, 0.05, 0.0);
+        chest.add(core);
+
+        // stars
+        const starGeo = new THREE.BufferGeometry();
+        const starN = 180;
+        const starPos = new Float32Array(starN*3);
+        for(let i=0;i<starN;i++){
+          starPos[i*3+0] = (Math.random()*2-1) * 2.2;
+          starPos[i*3+1] = (Math.random()*2-1) * 1.2 + 0.4;
+          starPos[i*3+2] = -1.6 - Math.random()*2.2;
+        }
+        starGeo.setAttribute("position", new THREE.BufferAttribute(starPos,3));
+        const starMat = new THREE.PointsMaterial({ color:0xffffff, size:0.012, transparent:true, opacity:0.35 });
+        const stars = new THREE.Points(starGeo, starMat);
+        stage.add(stars);
+
+        // particles (lite adjustable)
+        let liteMode = false;
+        let pCount = 900;
+
+        function buildParticles(count){
+          const pGeo = new THREE.BufferGeometry();
+          const positions = new Float32Array(count*3);
+          const velocities = new Float32Array(count*3);
+          const life = new Float32Array(count);
+          const maxLife = new Float32Array(count);
+          const sizes = new Float32Array(count);
+
+          function resetParticle(i, power=1.0){
+            const idx = i*3;
+            const r = Math.random()*0.18;
+            const a = Math.random()*Math.PI*2;
+            positions[idx+0] = Math.cos(a)*r;
+            positions[idx+1] = 0.02 + Math.random()*0.10;
+            positions[idx+2] = Math.sin(a)*r;
+
+            const sp = (0.6 + Math.random()*1.4) * power;
+            velocities[idx+0] = (Math.random()*2-1) * 0.55 * sp;
+            velocities[idx+1] = (0.8 + Math.random()*1.4) * 0.95 * sp;
+            velocities[idx+2] = (Math.random()*2-1) * 0.55 * sp;
+
+            life[i] = 0.0;
+            maxLife[i] = 0.55 + Math.random()*0.75;
+            sizes[i] = 3.5 + Math.random()*6.0;
+          }
+          for(let i=0;i<count;i++) resetParticle(i, 0.0);
+
+          pGeo.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+          pGeo.setAttribute("aSize", new THREE.BufferAttribute(sizes, 1));
+
+          const pMat = new THREE.ShaderMaterial({
+            transparent:true,
+            depthWrite:false,
+            blending: THREE.AdditiveBlending,
+            uniforms:{
+              uColor:{ value: new THREE.Color("#ffffff") },
+              uOpacity:{ value: 0.0 },
+              uPixelRatio:{ value: renderer.getPixelRatio() }
+            },
+            vertexShader:`
+              attribute float aSize;
+              uniform float uPixelRatio;
+              void main(){
+                vec4 mv = modelViewMatrix * vec4(position, 1.0);
+                gl_Position = projectionMatrix * mv;
+                float size = aSize * uPixelRatio;
+                gl_PointSize = size * (1.0 / max(0.25, -mv.z));
+              }
+            `,
+            fragmentShader:`
+              uniform vec3 uColor;
+              uniform float uOpacity;
+              void main(){
+                vec2 uv = gl_PointCoord - 0.5;
+                float d = dot(uv, uv);
+                float alpha = smoothstep(0.25, 0.0, d);
+                gl_FragColor = vec4(uColor, alpha * uOpacity);
+              }
+            `
+          });
+
+          const points = new THREE.Points(pGeo, pMat);
+          points.position.set(0, 0.02, 0.0);
+          chest.add(points);
+
+          return { count, pGeo, pMat, points, positions, velocities, life, maxLife, sizes, resetParticle };
+        }
+
+        let P = buildParticles(pCount);
+
+        function rebuildParticles(newCount){
+          chest.remove(P.points);
+          P.pGeo.dispose();
+          P.pMat.dispose();
+          P = buildParticles(newCount);
+          pCount = newCount;
+        }
+
+        function resize(){
+          const r = box3d.getBoundingClientRect();
+          const w = Math.max(10, Math.floor(r.width));
+          const h = Math.max(10, Math.floor(r.height));
+          renderer.setSize(w, h, false);
+          camera.aspect = w / h;
+          camera.updateProjectionMatrix();
+          P.pMat.uniforms.uPixelRatio.value = renderer.getPixelRatio();
+        }
+        new ResizeObserver(resize).observe(box3d);
+        resize();
+
+        let t0 = performance.now();
+        let timeScale = 1.0;
+        let animState = "idle";
+        let animStart = 0;
+        let idlePhase = 0;
+        let lidTarget = 0;
+        let camZoom = 0;
+        let shake = 0;
+        let burstPower = 0;
+        let glow = 0;
+
+        function applyRarityMaterials(rKey){
+          if(rKey==="common"){
+            bodyMatA.color.set("#2f66ff");
+            bodyMatB.color.set("#20308e");
+            trimMat.color.set("#f1d7a2");
+            lockMat.color.set("#ffcf7a");
+            P.pMat.uniforms.uColor.value.set("#ffffff");
+          }else if(rKey==="rare"){
+            bodyMatA.color.set("#2a9dff");
+            bodyMatB.color.set("#1a1e6a");
+            trimMat.color.set("#b6a6ff");
+            lockMat.color.set("#9bd7ff");
+            P.pMat.uniforms.uColor.value.set("#6dd5ff");
+          }else{
+            bodyMatA.color.set("#7a48ff");
+            bodyMatB.color.set("#1a0b2e");
+            trimMat.color.set("#ffd07a");
+            lockMat.color.set("#ffd07a");
+            P.pMat.uniforms.uColor.value.set("#ffd07a");
+          }
+        }
+        function setAnim(s){ animState=s; animStart=performance.now(); }
+
+        function reset(rKey){
+          setAnim("idle");
+          lidTarget=0; camZoom=0; shake=0; burstPower=0; glow=0; timeScale=1.0;
+          P.pMat.uniforms.uOpacity.value = 0.0;
+          coreMat.emissiveIntensity = 0.0;
+          coreMat.opacity = 0.0;
+
+          applyRarityMaterials(rKey || "common");
+          for(let i=0;i<P.count;i++) P.resetParticle(i, 0.0);
+        }
+        function playOpen(rKey){
+          applyRarityMaterials(rKey || "common");
+          setAnim("key");
+        }
+        function setLite(on){
+          liteMode = !!on;
+          const target = liteMode ? 420 : 900;
+          if(target !== pCount) rebuildParticles(target);
+        }
+
+        window.__threeApi = { reset, playOpen, setLite };
+        window.__threeReady = true;
+
+        function updateParticles(dt){
+          if(P.pMat.uniforms.uOpacity.value <= 0.001) return;
+
+          for(let i=0;i<P.count;i++){
+            P.life[i] += dt;
+            const m = P.maxLife[i] || 0.8;
+            const a = 1.0 - clamp(P.life[i]/m, 0, 1);
+
+            const idx=i*3;
+            P.positions[idx+0] += P.velocities[idx+0] * dt;
+            P.positions[idx+1] += P.velocities[idx+1] * dt;
+            P.positions[idx+2] += P.velocities[idx+2] * dt;
+
+            P.velocities[idx+1] -= 1.05 * dt;
+            P.velocities[idx+0] *= (1.0 - 0.45*dt);
+            P.velocities[idx+2] *= (1.0 - 0.45*dt);
+
+            if(a <= 0.0) P.resetParticle(i, burstPower);
+          }
+          P.pGeo.attributes.position.needsUpdate = true;
+        }
+
+        function animate(){
+          requestAnimationFrame(animate);
+
+          const enable3D = (()=>{ try{
+            const s = JSON.parse(localStorage.getItem("novel_settings_v2")||"{}");
+            return s.enable3D !== false;
+          }catch(e){ return true; }})();
+
+          const now = performance.now();
+          const rawDt = Math.min(0.033, (now - t0) / 1000);
+          t0 = now;
+          const dt = rawDt * timeScale;
+
+          const sceneOpen = (document.getElementById("scene").style.display === "flex");
+          const active = enable3D && sceneOpen;
+
+          if(active){
+            idlePhase += dt;
+            const floatY = Math.sin(idlePhase * 1.9) * 0.03;
+            const floatR = Math.sin(idlePhase * 1.3) * 0.04;
+            chest.position.y = -0.15 + floatY;
+            chest.rotation.y = -0.35 + floatR;
+          }
+
+          const t = (now - animStart) / 1000;
+
+          if(animState === "idle"){
+            glow = lerp(glow, 0.06, 0.05);
+            coreMat.emissiveIntensity = glow * 0.9;
+            coreMat.opacity = glow * 0.6;
+            P.pMat.uniforms.uOpacity.value = lerp(P.pMat.uniforms.uOpacity.value, 0.0, 0.08);
+            lidTarget = lerp(lidTarget, 0.0, 0.08);
+            camZoom = lerp(camZoom, 0.0, 0.06);
+          }
+
+          if(animState === "key"){
+            const k = clamp(t/0.80, 0, 1);
+            const e = easeOutCubic(k);
+
+            camZoom = lerp(camZoom, 0.65, 0.06);
+            glow = lerp(glow, 0.35 + 0.25*e, 0.08);
+            coreMat.emissiveIntensity = glow * 1.35;
+            coreMat.opacity = glow * 0.75;
+
+            chest.position.y = -0.15 + Math.sin(e*Math.PI) * 0.015;
+
+            if(t >= 0.80){
+              setAnim("impact");
+              timeScale = 0.35;
+
+              burstPower = 1.0;
+              P.pMat.uniforms.uOpacity.value = 0.0;
+              for(let i=0;i<P.count;i++) P.resetParticle(i, burstPower);
+
+              shake = 1.0;
+            }
+          }
+
+          if(animState === "impact"){
+            const k = clamp(t/0.35, 0, 1);
+            easeOutCubic(k);
+
+            P.pMat.uniforms.uOpacity.value = lerp(P.pMat.uniforms.uOpacity.value, 0.95, 0.18);
+            glow = lerp(glow, 0.95, 0.18);
+            coreMat.emissiveIntensity = glow * 2.0;
+            coreMat.opacity = 0.95;
+            camZoom = lerp(camZoom, 0.95, 0.10);
+
+            shake = lerp(shake, 0.0, 0.10);
+
+            if(t >= 0.35){
+              timeScale = 1.0;
+              setAnim("open");
+            }
+          }
+
+          if(animState === "open"){
+            const k = clamp(t/1.0, 0, 1);
+            easeInOutCubic(k);
+
+            lidTarget = lerp(lidTarget, -1.35, 0.12);
+            camZoom = lerp(camZoom, 0.8, 0.08);
+            P.pMat.uniforms.uOpacity.value = lerp(P.pMat.uniforms.uOpacity.value, 0.85, 0.06);
+
+            glow = lerp(glow, 1.05, 0.08);
+            coreMat.emissiveIntensity = glow * 2.1;
+            coreMat.opacity = lerp(coreMat.opacity, 0.95, 0.07);
+
+            if(t >= 1.0){
+              setAnim("reveal");
+            }
+          }
+
+          if(animState === "reveal"){
+            P.pMat.uniforms.uOpacity.value = lerp(P.pMat.uniforms.uOpacity.value, 0.0, 0.09);
+            coreMat.opacity = lerp(coreMat.opacity, 0.0, 0.08);
+            coreMat.emissiveIntensity = lerp(coreMat.emissiveIntensity, 0.0, 0.08);
+            camZoom = lerp(camZoom, 0.0, 0.08);
+
+            if(t >= 0.65){
+              setAnim("idle");
+            }
+          }
+
+          hinge.rotation.x = lerp(hinge.rotation.x, lidTarget, 0.12);
+
+          const baseZ = 2.65;
+          const zoomZ = lerp(baseZ, 1.85, camZoom);
+          camera.position.z = lerp(camera.position.z, zoomZ, 0.10);
+          camera.position.y = lerp(camera.position.y, 0.18 + camZoom*0.06, 0.10);
+
+          if(shake > 0.001 && active){
+            const s = shake * 0.012;
+            stage.position.x = (Math.random()*2-1) * s;
+            stage.position.y = (Math.random()*2-1) * s;
+          }else{
+            stage.position.lerp(new THREE.Vector3(0,0,0), 0.15);
+          }
+
+          if(active) updateParticles(dt);
+
+          starMat.opacity = 0.28 + Math.sin(now*0.0012)*0.07;
+          renderer.render(scene3, camera);
+        }
+
+        try{
+          const s = JSON.parse(localStorage.getItem("novel_settings_v2")||"{}");
+          setLite(!!s.lite);
+        }catch(e){}
+        reset("common");
+        animate();
+      }
+    })();
+  </script>
+</body>
+</html>
+
+
