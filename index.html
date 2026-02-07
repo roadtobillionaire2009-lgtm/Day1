@@ -203,7 +203,6 @@
       backdrop-filter: blur(16px);
       transform: translateZ(0);
     }
-    /* ✅ 임팩트용 */
     .sceneCard.hit{ animation: hit 240ms ease-out; }
     @keyframes hit{
       0%{ transform: translateZ(0) scale(1); }
@@ -406,15 +405,16 @@
       <div class="brand">
         <h1>🎁 오늘의 새로움</h1>
         <p>오늘의 새로움을 열어보세요.</p>
-        <button class="pill" id="quoteBtn" style="margin-top:10px;">💬 오늘의 명언 보기</button>
+        <div style="margin-top:10px; display:flex; gap:10px; flex-wrap:wrap;">
+          <button class="pill" id="quoteBtn">💬 오늘의 명언</button>
+          <button class="pill" id="boardBtn">🧾 내 게시판</button>
+        </div>
       </div>
       <div class="actions">
         <button class="pill" id="historyBtn">📚 기록</button>
         <button class="pill" id="settingsBtn">⚙️ 설정</button>
         <button class="pill primary" id="tierPill">🏅 <strong id="tierName">BRONZE</strong></button>
-
-        <!-- ✅ cap 숫자도 같이 표시 -->
-        <div class="pill primary" id="keysPill">🔑 <strong id="keysCount">0</strong> / <span id="keysCap">0</span></div>
+        <div class="pill primary" id="keysPill">🔑 <strong id="keysCount">0</strong> / <span id="keysCap">3</span></div>
         <button class="pill" id="soundBtn">🔊 사운드 ON</button>
       </div>
     </div>
@@ -484,7 +484,7 @@
       <div class="cta">
         <div>
           <div class="t">🎬 광고 보기 (열쇠 +1)</div>
-          <div class="d">광고를 볼 때마다 열쇠 1개를 추가로 받을 수 있어요. (최대치까지 누적)</div>
+          <div class="d">광고를 볼 때마다 열쇠 1개를 추가로 받을 수 있어요. (최대치까지 회복)</div>
         </div>
         <button id="adBtn">광고 보기</button>
       </div>
@@ -532,7 +532,6 @@
 
         <div class="sceneControls">
           <button class="btn" id="rerollBtn">🎲 질문 바꾸기</button>
-          <button class="btn ghost" id="previewBtn">👀 미리보기</button>
         </div>
 
         <div class="progress" id="prog"><div id="progBar"></div></div>
@@ -678,6 +677,9 @@
 
     /* ===========================
       1) STORAGE / STATE
+      - ✅ 핵심 변경(최소):
+        - 무료 key cap = 3 고정
+        - 오늘 오픈 횟수 tracking(행동 우선 하드룰)
     =========================== */
     const LS = {
       PREMIUM:"novel_premium_v1",
@@ -695,7 +697,8 @@
       PICKS:"novel_today_picks_v3",
       USER:"novel_user_v1",
       ANS:"novel_answers_v1",
-      PLANS:"novel_plans_v1"
+      PLANS:"novel_plans_v1",
+      OPENS:"novel_opens_today_v1" // ✅ NEW
     };
 
     function isPremium(){
@@ -723,6 +726,7 @@
     function getLastDone(){ return localStorage.getItem(LS.LASTDONE) || ""; }
     function setLastDone(d){ localStorage.setItem(LS.LASTDONE, d); }
 
+    // ✅ 티어는 "연출/배지" 용으로만 유지 (열쇠 cap과 분리)
     const TIERS = [
       { key:"bronze",   name:"BRONZE",   dailyKeys:3, color:"#b07a4a", glow:"rgba(176,122,74,.35)", badge:"🟤", req:0 },
       { key:"silver",   name:"SILVER",   dailyKeys:4, color:"#cfd6df", glow:"rgba(207,214,223,.35)", badge:"⚪", req:7 },
@@ -730,7 +734,6 @@
       { key:"platinum", name:"PLATINUM", dailyKeys:8, color:"#8fe6ff", glow:"rgba(143,230,255,.35)", badge:"🔷", req:45 },
       { key:"diamond",  name:"DIAMOND",  dailyKeys:10,color:"#b6a6ff", glow:"rgba(182,166,255,.35)", badge:"💎", req:80 },
     ];
-
     function getTier(){
       const done = getTotalDone();
       let t = TIERS[0];
@@ -739,15 +742,25 @@
       }
       return t;
     }
-    function getKeyCap(){ return getTier().dailyKeys; } // 일일 기본 지급량
+
+    // ✅ 핵심(B): 무료는 cap=3 고정, 광고는 회복(0→3)
+    function getKeyCap(){
+      return isPremium() ? 999 : 3;
+    }
     function getMaxKeys(){
-  // ✅ 광고로도 티어 일일 지급량(브론즈=3) 이상 못 모음
-  if(isPremium()) return 999;  // 프리미엄만 사실상 무제한(원하면 999도 티어별로 바꿔도 됨)
-  return getKeyCap();          // ✅ 핵심: 브론즈면 max=3
-}
+      return getKeyCap();
+    }
 
-
-
+    function getOpensToday(){
+      ensureDaily();
+      return Number(localStorage.getItem(LS.OPENS) || "0");
+    }
+    function incOpensToday(){
+      ensureDaily();
+      const n = getOpensToday() + 1;
+      localStorage.setItem(LS.OPENS, String(n));
+      return n;
+    }
 
     function renderTierUI(){
       const t = getTier();
@@ -759,7 +772,6 @@
     function tierEmblemSVG(t){
       const core = t.color;
       const symbol = {
-        // ✅ 브론즈: 더 고급스러운 코어
         bronze:   "M 64 22 C 54 30 50 44 56 56 C 60 64 68 64 72 56 C 78 44 74 30 64 22 Z",
         silver:   "M 64 16 A 22 22 0 1 0 64 60 A 22 22 0 1 0 64 16",
         gold:     "M 64 18 L 84 40 L 64 62 L 44 40 Z",
@@ -790,7 +802,6 @@
         <circle cx="64" cy="64" r="34" fill="url(#g)" filter="url(#glow)"/>
         <path d="${symbol}" fill="rgba(255,255,255,.88)" filter="url(#glow)"/>
 
-        <!-- ✅ 월계관 느낌 -->
         <path d="M 34 68 C 30 56 34 44 44 38" fill="none" stroke="rgba(255,255,255,.55)" stroke-width="3" stroke-linecap="round"/>
         <path d="M 94 68 C 98 56 94 44 84 38" fill="none" stroke="rgba(255,255,255,.55)" stroke-width="3" stroke-linecap="round"/>
 
@@ -816,13 +827,13 @@
           <div style="display:flex;justify-content:center;margin:14px 0;">${tierEmblemSVG(t)}</div>
 
           <div class="q" style="font-weight:850;line-height:1.5;">
-            ${t.badge} 매일 지급 열쇠: <b>${t.dailyKeys}</b>개<br/>
-            🎬 광고로 누적 최대: <b>${getMaxKeys()}</b>개<br/>
+            ${t.badge} 티어는 ‘완료 횟수’로 상승해요.<br/>
+            🔑 무료 열쇠 cap: <b>3</b> (광고는 회복용)<br/>
             📈 다음 티어까지: <b>${Math.max(0, nextTierNeed())}</b>회 더 완료
           </div>
 
           <div class="meta" style="margin-top:12px;">
-            티어는 ‘완료 횟수’가 쌓일수록 상승해요.
+            * 열쇠 시스템은 티어와 분리(컨셉 유지)됩니다.
           </div>
         `;
         body.appendChild(box);
@@ -835,12 +846,13 @@
       if(last !== t){
         localStorage.setItem(LS.DAY, t);
 
-        // ✅ 매일 기본 지급(티어 기준)
+        // ✅ 매일 기본 지급: 무료 3 고정 / 프리미엄은 cap까지
         localStorage.setItem(LS.KEYS, String(getKeyCap()));
         localStorage.removeItem(LS.PICKS);
+        localStorage.setItem(LS.OPENS, "0"); // ✅ NEW: 오늘 오픈 횟수 리셋
       }
 
-      // ✅ 혹시 너무 크면 max로 클램프
+      // ✅ 혹시 너무 크면 cap로 클램프
       const cur = Number(localStorage.getItem(LS.KEYS) || "0");
       const cap = getMaxKeys();
       if(cur > cap) localStorage.setItem(LS.KEYS, String(cap));
@@ -984,6 +996,8 @@
 
     /* ===========================
       3) CONTENT
+      - ✅ 카테고리 삭제/축소 없음 (네 코드 그대로)
+      - ✅ 행동 우선 하드룰용 ACTION_ONLY_BANK 추가(교체)
     =========================== */
     const CATS = [
       {name:"철학", emoji:"🧠", hint:"생각을 꺼내는 질문", premium:false},
@@ -1028,6 +1042,7 @@
       "다음 14일 동안 매일 10분만 투자한다면, 무엇을 하면 가장 큰 변화가 생길까요?",
       "미루는 순간의 트리거(상황/감정)를 1개 고르고, 그때의 대체 행동은 무엇일까요?"
     ];
+
     const CURIOSITY_BANK = [
       "왜 뜨거운 물이 경우에 따라 더 빨리 얼 수 있을까요? (힌트: Mpemba effect)",
       "하품이 전염되는 이유는 무엇일까요? (힌트: 공감/주의/거울뉴런 가설)",
@@ -1035,17 +1050,64 @@
       "비행기는 번개를 맞아도 보통 안전한 이유가 뭘까요? (힌트: 패러데이 케이지)",
       "휴대폰 진동은 내부에서 무엇이 어떻게 움직여서 생길까요? (힌트: ERM/LRA)"
     ];
+
+    // ✅ (A) 행동 우선 하드룰 전용 BANK: 너가 준 “교체본”
+    const ACTION_ONLY_BANK = [
+      "지금 6분만, 밖(또는 복도)로 나가서 300~500걸음만 걸어보세요.",
+      "지금 5분만, 책상 위를 ‘보이는 쓰레기 5개’만 치워보세요.",
+      "물 한 컵 마시고, 창밖(또는 천장 조명) 60초만 바라보며 숨 8번만 깊게 쉬어보세요.",
+      "지금 7분 타이머를 켜고, ‘내일 더 편해질 일 1개’만 끝내보세요. (가방 정리/충전기 꽂기 등)",
+      "오늘 처음 듣는 노래 1곡을 틀고, 2분만 ‘가사 없이’ 멜로디에 집중해보세요.",
+      "지금 3분: 평소 안 쓰는 손으로 간단한 일을 1개 해보세요. (문 열기/양치/물 따르기 등)",
+      "지금 5분만, ‘평소 안 보던 방향’으로 한 블록만 걸어갔다가 돌아오세요.",
+      "지금 4분: 주변에서 ‘파란색/초록색/노란색’ 물건을 각각 1개씩 찾아보세요."
+    ];
+
+    // (원래 있던 ACTION_BANK도 유지 — 삭제하지 않음)
     const ACTION_BANK = [
-      "지금 7분만, 평소 안 보던 방향으로 동네를 걸어보세요.",
+      "지금 바로 밖으로나가, 평소 안 보던 방향으로 동네를 걸어보세요.",
       "딱 5분만 하늘을 보고, 오늘 처음 본 구름 모양 1개를 찾아보세요.",
       "지금 3분: 목·어깨·손목 중 한 곳만 골라 스트레칭해보세요.",
-      "물 한 잔을 천천히 마시고, 숨을 10번만 깊게 쉬어보세요.",
-      "새 단어 1개를 골라 뜻을 찾아보고, 예문 1개만 만들어보세요."
+      "음악 하나를 틀고 한곡동안 가볍게 몸을 흔들어보세요"
     ];
+
     const THINKING_BANK = [
       "요즘 머릿속을 가장 자주 차지하는 생각 1개를 한 문장으로만 적어볼까요?",
       "오늘 하루에서 ‘작게라도’ 괜찮았던 순간 1개는 무엇이었나요?",
       "줄일 수 있는 스트레스 원인 1개를 고르고, 오늘 할 수 있는 ‘아주 작은 조치’는 무엇일까요?"
+    ];
+
+    // ✅ 추가 BANK(기존 카테고리 삭제 없이 내부에서만 사용)
+    const PHILO_LIGHT_BANK = [
+      "오늘 하루 가장 많이 반복한 생각이 무엇인지, 간단한 이유와 함께 적어보세요.",
+      "최근에 “이건 왜 이렇게 해야 하지?”라고 느낀 순간을 떠올려보세요.",
+      "오늘 본 뉴스 하나를 보고, 내 삶과 연결되는 점이 있는지 생각해보세요.",
+      "요즘 나를 가장 자주 방해하는 감정 하나를 적어보세요.",
+      "최근에 했던 선택 중 하나를 다시 한다면, 바꿀 부분이 있을지 생각해보세요.",
+      "오늘 하루를 한 문장으로 요약해보세요.",
+      "나에게 꼭 필요하지만 미뤄두고 있는 질문 하나를 적어보세요.",
+      "최근에 부러웠던 사람의 점 하나를 떠올려보세요.",
+      "“지금 이 상태로 1년이 지나도 괜찮을까?”를 잠깐 생각해보세요.",
+      "오늘 나 자신에게 가장 해주고 싶은 말 한 마디를 적어보세요."
+    ];
+
+    const KNOWLEDGE_BANK = [
+      "평소 잘 모르는 단어 하나의 뜻을 검색해보세요.",
+      "오늘 날짜와 관련된 과거 사건을 하나 찾아보세요.",
+      "자주 쓰는 물건 하나가 언제 처음 만들어졌는지 알아보세요.",
+      "나라 하나를 골라 그 나라의 특징 하나만 알아보세요.",
+      "지도에서 가본 적 없는 곳 하나를 찾아보세요.",
+      "평소 관심 없던 분야의 영상 하나를 클릭해보세요."
+    ];
+
+    const TRAVEL_BANK = [
+      "꿈에 그리는 휴가를 ‘딱 1일 코스’로만 계획해보세요. (장소 1개 + 먹을 것 1개)",
+      "가보고 싶은 곳을 지도에서 찍고, 그 근처 사진 1장만 찾아보세요."
+    ];
+
+    const CREATIVE_BANK = [
+      "종이에 아무 생각 없이 1분만 낙서를 해보세요.",
+      "오늘 하루를 ‘색깔 하나’로 표현하고, 이유를 한 줄만 적어보세요."
     ];
 
     function maybeMakeMCQ(cat, seedStr){
@@ -1065,8 +1127,14 @@
       };
     }
 
-    /* ✅ 중요: buildPromptV4 중복 정의 버그 제거(정상 버전) */
-    function buildPromptV4(cat, mood, seedStr){
+    // ✅ 행동 우선 하드룰 판단(오늘 첫 2회)
+    function shouldForceActionNow(){
+      const opens = getOpensToday();
+      return opens < 2; // 첫 0,1번째 오픈은 행동 고정
+    }
+
+    // ✅ buildPromptV4: "카테고리 유지" + "내부 선택만 개선"
+    function buildPromptV4(cat, mood, seedStr, opts={}){
       const mcq = maybeMakeMCQ(cat, seedStr);
       if(mcq) return mcq;
 
@@ -1074,40 +1142,63 @@
       const isPremiumCat = String(cat).startsWith("프리미엄");
       let text;
 
-      if(isPremiumCat){
+      // ✅ (A) 행동 우선 강제: opts.forceAction === true 일 때 무조건 ACTION_ONLY_BANK
+      if(opts.forceAction){
+        text = ACTION_ONLY_BANK[Math.floor(rng()*ACTION_ONLY_BANK.length)];
+      }else if(isPremiumCat){
+        // ✅ 프리미엄 완화: 지금은 막지 않고 내용은 제공
+        // TODO paywall: 나중에 여기서 "미리보기/제한" 정책 넣기
         text = PREMIUM_BANK[Math.floor(rng()*PREMIUM_BANK.length)];
       }else{
+        // 카테고리별 매핑(기존 로직 유지 + 일부 카테고리 더 자연스럽게)
         if(cat==="역사·상식" || cat==="언어"){
-          text = CURIOSITY_BANK[Math.floor(rng()*CURIOSITY_BANK.length)];
+          // 기존: CURIOSITY_BANK
+          // 보강: KNOWLEDGE_BANK도 섞기(삭제 없이 추가 느낌)
+          const mix = (rng() < 0.55) ? CURIOSITY_BANK : KNOWLEDGE_BANK;
+          text = mix[Math.floor(rng()*mix.length)];
         }else if(cat==="운동"){
-          text = ACTION_BANK[Math.floor(rng()*ACTION_BANK.length)];
+          // 기존 ACTION_BANK 유지 + ACTION_ONLY도 일부 섞기
+          const mix = (rng() < 0.55) ? ACTION_ONLY_BANK : ACTION_BANK;
+          text = mix[Math.floor(rng()*mix.length)];
+        }else if(cat==="여행"){
+          const mix = (rng() < 0.7) ? TRAVEL_BANK : THINKING_BANK;
+          text = mix[Math.floor(rng()*mix.length)];
+        }else if(cat==="철학"){
+          const mix = (rng() < 0.7) ? PHILO_LIGHT_BANK : THINKING_BANK;
+          text = mix[Math.floor(rng()*mix.length)];
         }else{
-          text = THINKING_BANK[Math.floor(rng()*THINKING_BANK.length)];
+          // 나머지는 기존 THINKING 중심 유지
+          // + CREATIVE_BANK 소량 섞어서 "추가 느낌"만
+          const mix = (rng() < 0.18) ? CREATIVE_BANK : THINKING_BANK;
+          text = mix[Math.floor(rng()*mix.length)];
         }
       }
 
       text = tidyKorean(text);
+
+      // ✅ (버그/리스크 개선) id는 seed 기반으로 준결정적(불필요하게 Date.now를 섞지 않음)
       const id = `v4:${cat}:${mood}:${xmur3(seedStr)()}`;
       return { id, cat, mood, text };
     }
 
-    function generateNonRepeat(cat, mood, seedBase, maxTry=40){
+    function generateNonRepeat(cat, mood, seedBase, maxTry=40, opts={}){
       const recent = new Set(getRecentIds());
       for(let i=0;i<maxTry;i++){
         const seed = `${seedBase}|${i}`;
-        const p = buildPromptV4(cat, mood, seed);
+        const p = buildPromptV4(cat, mood, seed, opts);
         if(!recent.has(p.id)){
           setRecentIds([p.id, ...getRecentIds()]);
           return p;
         }
       }
-      const p = buildPromptV4(cat, mood, `${seedBase}|fallback`);
+      const p = buildPromptV4(cat, mood, `${seedBase}|fallback`, opts);
       setRecentIds([p.id, ...getRecentIds()]);
       return p;
     }
 
     /* ===========================
       4) RECOMMENDATION
+      - ✅ 일일 추천은 seed에서 Date.now 제거(중복 방지 강화)
     =========================== */
     const RARITIES = [
       { key:"common", label:"일반", prob:0.78, dot:"#ffffff" },
@@ -1257,6 +1348,12 @@
     }
 
     function openScene(catObj){
+      // ✅ 프리미엄 완화: 막지 않고 안내만(소프트)
+      if(catObj.premium && !isPremium()){
+        // TODO paywall: 나중에 여기서 실제 차단/미리보기 제한 넣기
+        showToast("🌙 프리미엄 카테고리(테스트 모드): 지금은 열 수 있게 완화했어요.");
+      }
+
       state.activeCat = catObj.name;
       state.currentFromPick = false;
       bumpCat(state.activeCat);
@@ -1267,10 +1364,16 @@
       $("progBar").style.width = "0%";
 
       const mood = getMood();
-      state.currentPrompt = generateNonRepeat(state.activeCat, mood, `preview|${todayKey()}|${state.activeCat}|${Date.now()}`);
 
-      // 미리보기 rarity도 하나 정해두기
-      const rng = seededRng(`rar|${todayKey()}|${state.activeCat}|${Date.now()}`);
+      // ✅ seedBase: preview는 준결정적으로(불필요한 Date.now 제거)
+      state.currentPrompt = generateNonRepeat(
+        state.activeCat,
+        mood,
+        `preview|${todayKey()}|${state.activeCat}|slot0`
+      );
+
+      // rarity 미리보기는 오늘/카테고리 기반으로 안정화
+      const rng = seededRng(`rar|${todayKey()}|${state.activeCat}|slot0`);
       state.activeRarity = rollRarity(rng);
       setRarityUI(state.activeRarity);
 
@@ -1370,13 +1473,16 @@
     function rerollPrompt(){
       if(!state.activeCat) return;
       const mood = getMood();
-      state.currentPrompt = generateNonRepeat(state.activeCat, mood, `reroll|${todayKey()}|${state.activeCat}|${Date.now()}`);
+
+      // ✅ reroll은 "진짜 변경" 이벤트이므로 Date.now 허용
+      state.currentPrompt = generateNonRepeat(
+        state.activeCat,
+        mood,
+        `reroll|${todayKey()}|${state.activeCat}|${Date.now()}`,
+        40
+      );
       showToast("🎲 새 질문을 준비했어요. (열면 기록됩니다)");
       $("sceneMini").textContent = "새 질문을 준비했어요. 상자를 클릭해 열어보세요.";
-    }
-    function previewPrompt(){
-      if(!state.currentPrompt) return;
-      showToast(`👀 미리보기: ${state.currentPrompt.text}`);
     }
 
     function setLikeState(promptId, v){
@@ -1738,6 +1844,8 @@
 
     /* ===========================
       9) OPEN FLOW
+      - ✅ (A) 오늘 첫 2회 오픈은 무조건 행동(ACTION_ONLY_BANK)
+      - ✅ 오픈 카운트 증가
     =========================== */
     function openFlow(){
       if(state.opening) return;
@@ -1750,7 +1858,6 @@
 
       state.opening = true;
 
-      // ✅ UI 임팩트(펀치)
       const card = $("sceneCard");
       card.classList.add("hit");
       setTimeout(()=>card.classList.remove("hit"), 240);
@@ -1759,7 +1866,7 @@
       renderKeys();
       bgm.playEpic5s();
 
-      // ✅ open 시 rarity 확정(여기가 진짜)
+      // ✅ open 시 rarity 확정(네 코드 유지)
       const rng = seededRng(`open|${todayKey()}|${state.activeCat}|${Date.now()}|${Math.random()}`);
       state.activeRarity = rollRarity(rng);
       setRarityUI(state.activeRarity);
@@ -1783,11 +1890,35 @@
       }
 
       setTimeout(()=>{
+        // ✅ 오픈 카운트 증가(오늘 첫 2회 행동 강제용)
+        incOpensToday();
+
+        // ✅ (A) 행동 우선 하드룰: 첫 2회는 카테고리보다 우선
+        const forceAction = shouldForceActionNow();
+
         let prompt = state.currentPrompt;
-        if(!prompt || !state.currentFromPick){
+
+        // pick에서 들어온 경우도 "첫 2회"라면 행동 강제 (카테고리는 표시 유지, 내용만 행동)
+        if(forceAction){
           const mood = getMood();
-          prompt = generateNonRepeat(state.activeCat, mood, `openq|${todayKey()}|${state.activeCat}|${Date.now()}`);
+          prompt = generateNonRepeat(
+            state.activeCat,
+            mood,
+            `actionfirst|${todayKey()}|open${getOpensToday()}|${state.activeCat}`,
+            40,
+            { forceAction:true }
+          );
           state.currentPrompt = prompt;
+        }else{
+          if(!prompt || !state.currentFromPick){
+            const mood = getMood();
+            prompt = generateNonRepeat(
+              state.activeCat,
+              mood,
+              `openq|${todayKey()}|${state.activeCat}|open${getOpensToday()}` // Date.now 제거(준결정)
+            );
+            state.currentPrompt = prompt;
+          }
         }
 
         closeScene();
@@ -1916,11 +2047,8 @@
       12) INIT + EVENTS
     =========================== */
     function init(){
-
-ensureDaily();
-setKeys(left()); // ✅ 현재 값을 새 max 규칙으로 즉시 클램프
-
-
+      ensureDaily();
+      setKeys(left()); // 새 cap 규칙으로 즉시 클램프
 
       state.soundOn = (localStorage.getItem(LS.SOUND) ?? "1") === "1";
       $("soundBtn").textContent = state.soundOn ? "🔊 사운드 ON" : "🔇 사운드 OFF";
@@ -1978,19 +2106,52 @@ setKeys(left()); // ✅ 현재 값을 새 max 규칙으로 즉시 클램프
       openFlow();
     };
 
-    $("rerollBtn").onclick = rerollPrompt;
-    $("previewBtn").onclick = previewPrompt;
+    const rerollEl = $("rerollBtn");
+    if (rerollEl) rerollEl.onclick = rerollPrompt;
 
+    // ✅ alert 제거(UX 개선) — 기존 기능 유지, 표시는 모달로
     $("adBtn").onclick = ()=>{
-      alert("🎬 (데모 광고)\n\n안녕하세요! 제이름은 이윤성입니다. 반복되는 삶속에서 새로움을 느끼고, 자기개발에 도움이되는 앱을 만들어보았습니다. 도움이되면 좋겠습니다 감사합니다. ");
-      const ok = addKey(1);
-      renderKeys();
-      if(ok) showToast("열쇠 +1 지급!");
-      else showToast(`이미 최대치예요. (최대 ${getMaxKeys()}개)`);
+      openModal("🎬 (데모 광고)", (body)=>{
+        const div=document.createElement("div");
+        div.className="item";
+        div.innerHTML = `
+          <div class="q" style="line-height:1.6;">
+            안녕하세요! 제 이름은 이윤성입니다.<br/>
+            반복되는 삶 속에서 새로움을 느끼고, 자기개발에 도움이 되는 앱을 만들어보았습니다.<br/>
+            도움이 되면 좋겠습니다. 감사합니다!
+          </div>
+          <div class="tagline" style="justify-content:center;margin-top:12px;">
+            <button class="btn primary" id="adOk">확인</button>
+          </div>
+        `;
+        body.appendChild(div);
+        div.querySelector("#adOk").onclick = ()=>{
+          closeModal();
+          const ok = addKey(1);
+          renderKeys();
+          if(ok) showToast("열쇠 +1 지급! (회복)");
+          else showToast(`이미 최대치예요. (최대 ${getMaxKeys()}개)`);
+        };
+      });
     };
 
     $("subBtn").onclick = ()=>{
-      alert("🌙 (데모)\n결제는 아직 연결 전이에요.\n지금은 UI/흐름만 테스트 중입니다.");
+      openModal("🌙 프리미엄 (데모)", (body)=>{
+        const div=document.createElement("div");
+        div.className="item";
+        div.innerHTML = `
+          <div class="q" style="line-height:1.6;">
+            결제는 아직 연결 전이에요.<br/>
+            지금은 UI/흐름만 테스트 중입니다.<br/>
+            <span style="opacity:.75;">(테스트 편의를 위해 프리미엄 카테고리 차단은 완화되어 있어요)</span>
+          </div>
+          <div class="tagline" style="justify-content:center;margin-top:12px;">
+            <button class="btn" id="subClose">닫기</button>
+          </div>
+        `;
+        body.appendChild(div);
+        div.querySelector("#subClose").onclick = closeModal;
+      });
       // setPremium(true); // 필요하면 테스트로 켜기
       // renderKeys(); renderTierUI();
     };
@@ -2045,6 +2206,9 @@ setKeys(left()); // ✅ 현재 값을 새 max 규칙으로 즉시 클램프
         body.appendChild(div);
       });
     };
+
+    const boardEl = $("boardBtn");
+    if (boardEl) boardEl.onclick = renderMyBoardModal;
 
     $("saveAnswerBtn").onclick = ()=>{
       const p = state.currentPrompt;
@@ -2241,7 +2405,6 @@ setKeys(left()); // ✅ 현재 값을 새 max 규칙으로 즉시 클램프
         core.position.set(0, 0.05, 0.0);
         chest.add(core);
 
-        // ✅ 전설/희귀 후광 링 (체감 "우와" 요소)
         const haloMat = new THREE.MeshBasicMaterial({ color:0xffffff, transparent:true, opacity:0.0, side:THREE.DoubleSide });
         const halo = new THREE.Mesh(new THREE.RingGeometry(0.22, 0.40, 96), haloMat);
         halo.rotation.x = Math.PI/2;
@@ -2261,7 +2424,6 @@ setKeys(left()); // ✅ 현재 값을 새 max 규칙으로 즉시 클램프
         const stars = new THREE.Points(starGeo, starMat);
         stage.add(stars);
 
-        // particles (lite adjustable)
         let enabled = true;
         let liteMode = false;
         let pCount = 800;
@@ -2386,7 +2548,6 @@ setKeys(left()); // ✅ 현재 값을 새 max 규칙으로 즉시 클램프
           currentRarityKey = rKey || "common";
           applyRarityMaterials(currentRarityKey);
 
-          // ✅ 희귀/전설일수록 폭발 강화 + 파티클 수 증가(라이트 제외)
           const pow = (currentRarityKey==="legendary") ? 1.8 : (currentRarityKey==="rare" ? 1.25 : 1.0);
           burstPower = pow;
 
@@ -2429,6 +2590,9 @@ setKeys(left()); // ✅ 현재 값을 새 max 규칙으로 즉시 클램프
           P.pGeo.attributes.position.needsUpdate = true;
         }
 
+        // ✅ (버그/리스크 2) 씬 열릴 때만 고성능, 닫히면 5fps 정도로 저전력
+        let lastIdleRender = 0;
+
         function animate(){
           requestAnimationFrame(animate);
 
@@ -2439,6 +2603,12 @@ setKeys(left()); // ✅ 현재 값을 새 max 규칙으로 즉시 클램프
           const sceneOpen = (document.getElementById("scene").style.display === "flex");
           const settings = (()=>{ try{ return JSON.parse(localStorage.getItem("novel_settings_v3")||"{}"); }catch(e){ return {}; }})();
           const active = enabled && (settings.enable3D !== false) && sceneOpen;
+
+          // 저전력 모드: 씬 닫혔으면 200ms(≈5fps)마다만 렌더
+          if(!active){
+            if(now - lastIdleRender < 200) return;
+            lastIdleRender = now;
+          }
 
           if(active){
             idlePhase += rawDt;
@@ -2492,7 +2662,6 @@ setKeys(left()); // ✅ 현재 값을 새 max 규칙으로 즉시 클램프
             camZoom = lerp(camZoom, 0.95*pow, 0.10);
             shake = lerp(shake, 0.0, 0.10);
 
-            // ✅ 후광 링(전설일수록 강하게)
             haloMat.opacity = lerp(haloMat.opacity, (currentRarityKey==="legendary") ? 0.85 : (currentRarityKey==="rare" ? 0.45 : 0.0), 0.18);
             halo.scale.setScalar( lerp(halo.scale.x, 1.35, 0.12) );
 
