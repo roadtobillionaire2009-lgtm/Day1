@@ -3,7 +3,23 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>오늘의 새로움</title>
+  <!-- PWA 기본 설정 -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#070913">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="오늘의 새로움">
+
+<link rel="apple-touch-icon" href="icon-192.png">
+
+  <title>오늘의 새로움</title> 
+    <!-- PWA / iOS 홈화면 추가용 -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="apple-touch-icon" href="icon-512.png"> 
+<meta name="theme-color" content="#070913">
+ 
   <style>
     :root{
       --bg1:#070913; --bg2:#0d1020;
@@ -416,6 +432,8 @@
         <button class="pill primary" id="tierPill">🏅 <strong id="tierName">BRONZE</strong></button>
         <div class="pill primary" id="keysPill">🔑 <strong id="keysCount">0</strong> / <span id="keysCap">3</span></div>
         <button class="pill" id="soundBtn">🔊 사운드 ON</button>
+              <button class="pill" id="exitBtn">⤴︎ 나가기</button>
+
       </div>
     </div>
 
@@ -543,7 +561,11 @@
   <div class="qs" id="qs">
     <div class="sparkBg"></div>
     <div class="qWrap">
-      <div class="qMeta" id="qMeta"></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+  <div class="qMeta" id="qMeta" style="text-align:left;"></div>
+  <button class="closeX" id="qsClose">닫기</button>
+</div>
+
       <div class="qText" id="qText"></div>
 
       <!-- MCQ -->
@@ -1735,6 +1757,8 @@
         ctx = ctx || new (window.AudioContext||window.webkitAudioContext)();
         return ctx;
       }
+
+      
       function tone(freq=440, dur=0.08, type="sine", gain=0.08){
         const c=ac(); if(!c) return;
         const o=c.createOscillator();
