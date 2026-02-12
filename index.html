@@ -1,16 +1,21 @@
 <!doctype html>
 <html lang="ko">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <!-- PWA 기본 설정 -->
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+
+<title>오늘의 새로움</title>
+
+<!-- PWA -->
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#070913">
+
+<!-- iOS 홈화면 -->
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="오늘의 새로움">
+<link rel="apple-touch-icon" href="icon-512.png">
 
-<link rel="apple-touch-icon" href="icon-192.png">
 
   <title>오늘의 새로움</title> 
     <!-- PWA / iOS 홈화면 추가용 -->
@@ -412,11 +417,27 @@
     @media (prefers-reduced-motion: reduce){
       *{animation:none !important;transition:none !important}
     }
+    #pages{
+  display:flex;
+  width:200vw;
+  height:100vh;
+  transform: translateX(0);
+  transition: transform .22s ease;
+  will-change: transform;
+}
+.page{
+  width:100vw;
+  height:100vh;
+  overflow:auto;
+}
+
   </style>
 </head>
 
 <body>
-  <div class="wrap">
+  <div id="pages">
+  <section class="page" id="pageHome">
+    <div class="wrap">
     <div class="topbar">
       <div class="brand">
         <h1>🎁 오늘의 새로움</h1>
@@ -515,6 +536,55 @@
       </div>
     </div>
   </div>
+
+    <!-- ✅ 기존 <div class="wrap"> ... </div> 통째로 여기로 이동 -->
+  </section>
+
+  <section class="page" id="pageCommunity">
+<div class="wrap">
+  <div class="panel">
+    <div class="panelHead">
+      <div>
+        <div class="h">🌐 커뮤니티</div>
+        <div class="s">자기개발 인증/공유하기 (사진·영상 + 글)</div>
+      </div>
+      <div class="panelBtns">
+        <button class="btn" id="goHomeBtn">← 홈</button>
+      </div>
+    </div>
+
+    <div style="margin-top:12px; display:grid; gap:10px;">
+      <div class="item">
+        <div class="meta">새 글 올리기</div>
+
+        <input id="commTitle" placeholder="제목"
+          style="width:100%;margin-top:10px;border-radius:12px;padding:10px 12px;
+          border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);
+          color:#fff;outline:none;" />
+
+        <textarea id="commText" rows="3" placeholder="내용"
+          style="width:100%;margin-top:8px;border-radius:12px;padding:10px 12px;
+          border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);
+          color:#fff;outline:none;resize:vertical;"></textarea>
+
+<input id="commFile" type="file" accept="image/*">
+          style="margin-top:10px;color:rgba(255,255,255,.9);" />
+
+        <div style="display:flex;justify-content:flex-end;margin-top:10px;">
+          <button class="btn primary" id="commPostBtn" type="button">업로드</button>
+        </div>
+      </div>
+
+      <div class="item">
+        <div class="meta">전체 글</div>
+        <div id="commFeed" style="display:grid;gap:10px;margin-top:10px;"></div>
+      </div>
+    </div>
+  </div>
+</div>
+  </section>
+</div>
+  
 
   <!-- Scene -->
   <div class="scene" id="scene">
@@ -2074,6 +2144,41 @@
       ensureDaily();
       setKeys(left()); // 새 cap 규칙으로 즉시 클램프
 
+      let pageIndex = 0; // 0=home, 1=community
+const pagesEl = document.getElementById("pages");
+
+function goPage(i){
+  pageIndex = Math.max(0, Math.min(1, i));
+  pagesEl.style.transform = `translateX(-${pageIndex * 100}vw)`;
+}
+
+document.getElementById("goHomeBtn").onclick = ()=> goPage(0);
+
+// 스와이프
+let sx=0, sy=0, tracking=false;
+
+window.addEventListener("touchstart",(e)=>{
+  if(e.touches.length!==1) return;
+  tracking=true;
+  sx=e.touches[0].clientX;
+  sy=e.touches[0].clientY;
+},{passive:true});
+
+window.addEventListener("touchend",(e)=>{
+  if(!tracking) return;
+  tracking=false;
+
+  const dx = (e.changedTouches[0].clientX - sx);
+  const dy = (e.changedTouches[0].clientY - sy);
+
+  if(Math.abs(dx) < 50) return;       // 너무 짧으면 무시
+  if(Math.abs(dy) > 80) return;       // 세로 스크롤이면 무시
+
+  if(dx < 0) goPage(1);  // 왼쪽으로 스와이프 → 커뮤니티
+  if(dx > 0) goPage(0);  // 오른쪽으로 스와이프 → 홈
+},{passive:true});
+
+
       state.soundOn = (localStorage.getItem(LS.SOUND) ?? "1") === "1";
       $("soundBtn").textContent = state.soundOn ? "🔊 사운드 ON" : "🔇 사운드 OFF";
 
@@ -2757,6 +2862,254 @@
     })();
   </script>
 </body>
+<!-- =========================
+  COMMUNITY + FIREBASE (PASTE ONCE)
+  Paste this RIGHT BEFORE </body>
+========================= -->
+
+<!-- Floating button -->
+<button id="commFab"
+  style="position:fixed;right:18px;bottom:18px;z-index:9999;
+  padding:12px 14px;border-radius:999px;border:1px solid rgba(255,255,255,.18);
+  background:rgba(20,20,30,.86);backdrop-filter:blur(10px);
+  color:#fff;font-weight:700;cursor:pointer;box-shadow:0 10px 30px rgba(0,0,0,.35);">
+  🌐 커뮤니티
+</button>
+
+<!-- Modal -->
+<div id="commModal" style="display:none;position:fixed;inset:0;z-index:10000;">
+  <div id="commBg" style="position:absolute;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(6px);"></div>
+
+  <div style="position:relative;max-width:760px;width:min(92vw,760px);
+    margin:auto;background:rgba(18,18,26,.92);border:1px solid rgba(255,255,255,.12);
+    border-radius:18px;box-shadow:0 20px 70px rgba(0,0,0,.55);overflow:hidden;">
+
+    <div style="display:flex;align-items:center;justify-content:space-between;
+      padding:14px 16px;border-bottom:1px solid rgba(255,255,255,.10);">
+      <div style="color:#fff;font-size:16px;font-weight:800;">🌐 커뮤니티</div>
+      <button id="commClose" style="cursor:pointer;background:transparent;border:0;color:rgba(255,255,255,.85);
+        font-weight:800;font-size:14px;">닫기 ✕</button>
+    </div>
+
+    <div style="padding:14px 16px;display:grid;gap:12px;max-height:78vh;overflow:auto;">
+      <!-- Post form -->
+      <div style="border:1px solid rgba(255,255,255,.10);border-radius:14px;padding:12px;background:rgba(255,255,255,.04);">
+        <div style="color:rgba(255,255,255,.72);font-size:12px;font-weight:700;">새 글 올리기</div>
+
+        <input id="commTitle" placeholder="제목"
+          style="width:100%;margin-top:10px;border-radius:12px;padding:10px 12px;
+          border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);
+          color:#fff;outline:none;" />
+
+        <textarea id="commText" rows="3" placeholder="내용"
+          style="width:100%;margin-top:8px;border-radius:12px;padding:10px 12px;
+          border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);
+          color:#fff;outline:none;resize:vertical;"></textarea>
+
+        <input id="commFile" type="file" accept="image/*,video/*"
+          style="margin-top:10px;color:rgba(255,255,255,.9);" />
+
+        <div style="display:flex;justify-content:flex-end;margin-top:10px;">
+          <button id="commPostBtn"
+            style="cursor:pointer;border:0;border-radius:12px;padding:10px 14px;
+            background:linear-gradient(90deg, rgba(255,154,0,.95), rgba(255,90,0,.95));
+            color:#111;font-weight:900;">
+            업로드
+          </button>
+        </div>
+      </div>
+
+      <!-- Feed -->
+      <div style="border:1px solid rgba(255,255,255,.10);border-radius:14px;padding:12px;background:rgba(255,255,255,.04);">
+        <div style="color:rgba(255,255,255,.72);font-size:12px;font-weight:700;">전체 글</div>
+        <div id="commFeed" style="display:grid;gap:10px;margin-top:10px;"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+  // Firebase core
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
+import { getAuth, signInAnonymously } 
+from "https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js";
+
+  // Firestore
+  import {
+    getFirestore, collection, addDoc, serverTimestamp,
+    query, orderBy, onSnapshot, doc, updateDoc, increment
+  } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
+
+  // Storage
+
+  // ✅ 너가 보내준 설정값 그대로
+  const firebaseConfig = {
+    apiKey: "AIzaSyBO1-UtfmY3b2t_aZlqilW2nmVPlGS_qFk",
+    authDomain: "mystery-box-a066f.firebaseapp.com",
+    projectId: "mystery-box-a066f",
+    storageBucket: "mystery-box-a066f.firebasestorage.app",
+    messagingSenderId: "944857214375",
+    appId: "1:944857214375:web:868699e33cdb6c35e85a82",
+    measurementId: "G-HM3LTY7HTG"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  await signInAnonymously(auth);
+
+  const db = getFirestore(app);
+
+// 앱 시작하면 자동 익명 로그인
+signInAnonymously(auth).catch((e)=> {
+  console.error("anon login fail", e);
+  alert("익명 로그인 실패: " + e.code);
+});
+
+onAuthStateChanged(auth, (user)=>{
+  if(user){
+    console.log("anon uid:", user.uid);
+  }
+});
+
+  // ---- modal open/close
+  const commModal = document.getElementById("commModal");
+  const commOpen = () => commModal.style.display = "block";
+  const commClose = () => commModal.style.display = "none";
+
+  document.getElementById("commFab").onclick = commOpen;
+  document.getElementById("commClose").onclick = commClose;
+  document.getElementById("commBg").onclick = commClose;
+
+  // ---- post
+  document.getElementById("commPostBtn").onclick = async (e) => {
+  e.preventDefault();
+  e.stopPropagation();
+
+  const title = document.getElementById("commTitle").value.trim();
+  const text  = document.getElementById("commText").value.trim();
+  const file  = document.getElementById("commFile").files[0];
+
+  if (!title && !text && !file) {
+    alert("제목/내용/파일 중 하나는 필요해!");
+    return;
+  }
+
+  let mediaUrl = "";
+  let mediaType = "";
+
+  try {
+if (file) {
+  // ✅ 이미지 업로드: Cloudinary (무료)
+  const cloudName = "너의_CLOUD_NAME";         // ← 1) 여기 바꿔
+  const uploadPreset = "너의_UPLOAD_PRESET";  // ← 2) 여기 바꿔
+
+  const fd = new FormData();
+  fd.append("file", file);
+  fd.append("upload_preset", uploadPreset);
+
+  const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
+    method: "POST",
+    body: fd
+  });
+
+  const data = await res.json();
+
+  if (!res.ok) {
+    console.log(data);
+    alert("이미지 업로드 실패! (Cloudinary 설정 확인 필요)");
+    return;
+  }
+
+  mediaUrl = data.secure_url;   // ✅ 업로드된 이미지 URL
+  mediaType = "image";
+}
+
+
+    await addDoc(collection(db, "posts"), {
+      title,
+      text,
+      mediaUrl,
+      mediaType,
+      likes: 0,
+      createdAt: serverTimestamp()
+    });
+
+    document.getElementById("commTitle").value = "";
+    document.getElementById("commText").value = "";
+    document.getElementById("commFile").value = "";
+  } catch (err) {
+    console.error(err);
+    alert("업로드 실패: 콘솔(F12)에 에러가 떠. 그 에러 한 줄만 보내줘!");
+  }
+};
+
+
+  // ---- realtime feed
+  const feedEl = document.getElementById("commFeed");
+  const q = query(collection(db, "posts"), orderBy("createdAt", "desc"));
+
+  onSnapshot(q, (snap) => {
+    feedEl.innerHTML = "";
+
+    snap.forEach((docSnap) => {
+      const d = docSnap.data();
+      const id = docSnap.id;
+
+      const card = document.createElement("div");
+      card.style.cssText =
+        "border:1px solid rgba(255,255,255,.10);border-radius:14px;" +
+        "padding:12px;background:rgba(0,0,0,.18);";
+
+      const title = (d.title || "(제목 없음)");
+      const likes = (d.likes || 0);
+
+      card.innerHTML = `
+        <div style="display:flex;justify-content:space-between;gap:10px;align-items:center;">
+          <div style="color:#fff;font-weight:900;">${escapeHtml(title)}</div>
+          <div style="color:rgba(255,255,255,.75);font-weight:800;font-size:13px;">❤️ ${likes}</div>
+        </div>
+
+        ${d.text ? `<div style="margin-top:8px;color:rgba(255,255,255,.9);white-space:pre-wrap;">${escapeHtml(d.text)}</div>` : ""}
+
+        ${d.mediaUrl && d.mediaType==="image"
+          ? `<img src="${d.mediaUrl}" style="width:100%;margin-top:10px;border-radius:12px;">`
+          : ""}
+
+        ${d.mediaUrl && d.mediaType==="video"
+          ? `<video src="${d.mediaUrl}" controls style="width:100%;margin-top:10px;border-radius:12px;"></video>`
+          : ""}
+
+        <div style="display:flex;justify-content:flex-end;margin-top:10px;">
+          <button data-like
+            style="cursor:pointer;border:1px solid rgba(255,255,255,.14);
+            border-radius:12px;padding:8px 12px;background:rgba(255,255,255,.06);
+            color:#fff;font-weight:900;">
+            좋아요
+          </button>
+        </div>
+      `;
+
+      card.querySelector("[data-like]").onclick = async () => {
+        await updateDoc(doc(db, "posts", id), { likes: increment(1) });
+      };
+
+      feedEl.appendChild(card);
+    });
+  });
+
+  function escapeHtml(str){
+    return String(str)
+      .replaceAll("&","&amp;")
+      .replaceAll("<","&lt;")
+      .replaceAll(">","&gt;")
+      .replaceAll('"',"&quot;")
+      .replaceAll("'","&#039;");
+  }
+</script>
+<!-- =========================
+  END PASTE
+========================= -->
+
 </html>
 
 
